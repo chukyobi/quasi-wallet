@@ -28,8 +28,6 @@ export default function RootLayout({
     <html lang="en">
         <body className="flex flex-col min-h-screen font-[family-name:var(--font-geist-sans)]">
       
-        <Navigation /> 
-
         {/* Main Content */}
         <main className="flex-grow ">
           {children}

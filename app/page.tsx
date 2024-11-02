@@ -1,10 +1,13 @@
-import Image from 'next/image';
-import mockupImage from '../public/assets/phone_hero.png';
+// import Image from 'next/image';
+// import mockupImage from '../public/assets/phone_hero.png';
 import { ArrowRightIcon } from '@heroicons/react/24/solid';
+import Navigation from '../components/Navigation';
+
 
 export default function HomePage() {
   return (
   <>
+   <Navigation /> 
     <section className="relative flex flex-col items-start  text-white py-16 px-8 lg:px-24">
 
     {/* Main Content */}
