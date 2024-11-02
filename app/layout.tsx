@@ -26,7 +26,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-        <body className="flex flex-col min-h-screen font-[family-name:var(--font-geist-sans)]">
+        <body className="flex flex-col bg-gradient-to-r from-black via-gray-900 to-black min-h-screen font-[family-name:var(--font-geist-sans)]">
       
         {/* Main Content */}
         <main className="flex-grow ">

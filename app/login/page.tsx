@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import LoginButtons from "../../components/LoginButtons";
 import {
   LockClosedIcon,
@@ -9,11 +9,28 @@ import {
 } from "@heroicons/react/24/solid";
 import { signIn } from "next-auth/react";
 
+// Sample images for the slider
+const slides = [
+  {
+    src: "/assets/slide4.jpg",
+    text: "Smartest Way to Save Crypto",
+  },
+  {
+    src: "/assets/slide5.jpg",
+    text: "Track Your Finances Effortlessly!",
+  },
+  {
+    src: "/assets/slide6.jpg",
+    text: "Secure Your Investments Today!",
+  },
+];
+
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [currentSlide, setCurrentSlide] = useState(0);
 
   const handleSubmit = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
@@ -25,7 +42,7 @@ export default function LoginPage() {
     if (result?.error) {
       setError(result.error);
     } else if (result) {
-      window.location.href = "/dashboard";
+      window.location.href = "/dashboard"; // Redirect to the dashboard on successful login
     } else {
       setError("An unexpected error occurred. Please try again.");
     }
@@ -35,37 +52,61 @@ export default function LoginPage() {
     setShowPassword((prev) => !prev);
   };
 
+  // Function to change to the next slide
+  const nextSlide = () => {
+    setCurrentSlide((prevSlide) => (prevSlide + 1) % slides.length);
+  };
+
+  // Effect for automatic sliding
+  useEffect(() => {
+    const interval = setInterval(nextSlide, 3000); // Change slide every 3 seconds
+    return () => clearInterval(interval); // Clear interval on unmount
+  }, []);
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-black via-gray-900 to-black">
       <div className="absolute w-16 h-16 bg-green-500 rounded-full bottom-20 right-16 blur-lg opacity-75"></div>
       <div className="absolute w-20 h-20 bg-yellow-400 rounded-full top-10 left-10 blur-lg opacity-75"></div>
-      
+
       <div className="w-full max-w-4xl bg-transparent rounded-3xl shadow-2xl flex">
         {/* Left Section */}
-        <div className="w-1/2 p-8 flex flex-col justify-center items-center bg-gray-100">
-          <div className="mb-8 text-center">
-            <h1 className="text-lg font-bold text-gray-800">Current Balance</h1>
-            <p className="text-3xl font-semibold text-yellow-500">$24,359</p>
-          </div>
-          <div className="mb-8 text-center justify-center bg-white py-8 px-10">
-            <span className="mt-4 w-12 h-12 rounded-full bg-yellow-500 flex items-center justify-center text-white text-lg">
-              +
-            </span>
-            <h2 className="text-lg font-bold text-gray-800">New Wallet</h2>
-            <p className="text-xs text-gray-500">
-              Secure <span className="text-yellow-500">seed</span>-phrase
-            </p>
-          </div>
-          <div className="text-center">
-            <div className="w-24 h-24 bg-white rounded-full shadow-md flex items-center justify-center">
-              <div className="text-2xl text-gray-800 font-bold">34%</div>
-              <div className="text-xs text-gray-500">Food</div>
+        <div className="hidden md:flex w-1/2 relative overflow-hidden">
+          {/* Image Slider */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <img
+              src={slides[currentSlide].src}
+              alt="Slide Image"
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-green-500 to-yellow-500 opacity-30"></div>
+            <div className="absolute inset-0 flex flex-col items-center justify-end text-white text-center p-4 pb-10">
+              {" "}
+              {/* Adjusted padding to position text lower */}
+              <h1 className="text-2xl font-bold mb-2">
+                {" "}
+                {/* Added margin bottom to stack texts */}
+                {slides[currentSlide].text}
+              </h1>
             </div>
+          </div>
+
+          {/* Pagination Indicators */}
+          <div className="absolute bottom-4 left-1/2 w-9 h-2 transform -translate-x-1/2 flex space-x-2">
+            {slides.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentSlide(index)}
+                className={`w-3 h-3 rounded-full ${
+                  index === currentSlide ? "bg-white" : "bg-gray-300"
+                } transition`}
+                aria-label={`Go to slide ${index + 1}`}
+              />
+            ))}
           </div>
         </div>
 
         {/* Right Section */}
-        <div className="w-1/2 p-8">
+        <div className="w-full md:w-1/2 p-8">
           <h1 className="text-3xl font-semibold text-gray-50 mb-4">
             Welcome <span className="text-green-500">Back!</span>
           </h1>
