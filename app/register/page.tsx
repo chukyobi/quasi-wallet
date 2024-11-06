@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { signIn } from "next-auth/react";
+
 import LoginButtons from "../../components/LoginButtons";
 import {
   LockClosedIcon,
@@ -11,7 +11,7 @@ import {
 } from "@heroicons/react/24/solid";
 import axios from "axios";
 
-// Sample images for the slider
+// images for the slider
 const slides = [
   {
     src: "/assets/slide4.jpg",
@@ -37,7 +37,6 @@ export default function Register() {
   const [error, setError] = useState("");
   const [isValidPassword, setIsValidPassword] = useState(false);
   const [isValidConfirmPassword, setIsValidConfirmPassword] = useState(false);
-
   const [currentSlide, setCurrentSlide] = useState(0);
 
   const passwordRegex =
@@ -52,23 +51,14 @@ export default function Register() {
     }
 
     try {
-      const response = await axios.post("/api/auth/signup", {
+      const response = await axios.post('/api/auth/signup', {
         email,
         name,
         password,
       });
 
       if (response.status === 201) {
-        // Sign in the user after successful signup
-        const signInResult = await signIn("credentials", {
-          redirect: false,
-          email,
-          password,
-        });
-
-        if (signInResult?.ok) {
-          window.location.href = "/dashboard"; // Redirect to dashboard after successful login
-        }
+        window.location.href = "/verify-account";
       }
     } catch (err: any) {
       setError(
@@ -93,17 +83,16 @@ export default function Register() {
     setIsValidConfirmPassword(confirmPassword === password);
   };
 
-    // Function to change to the next slide
-    const nextSlide = () => {
-      setCurrentSlide((prevSlide) => (prevSlide + 1) % slides.length);
-    };
-  
-    // Effect for automatic sliding
-    useEffect(() => {
-      const interval = setInterval(nextSlide, 3000); // Change slide every 3 seconds
-      return () => clearInterval(interval); // Clear interval on unmount
-    }, []);
-  
+  // Function to change to the next slide
+  const nextSlide = () => {
+    setCurrentSlide((prevSlide) => (prevSlide + 1) % slides.length);
+  };
+
+  // Effect for automatic sliding
+  useEffect(() => {
+    const interval = setInterval(nextSlide, 3000); // Change slide every 3 seconds
+    return () => clearInterval(interval); // Clear interval on unmount
+  }, []);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-black via-gray-900 to-black">
@@ -112,7 +101,6 @@ export default function Register() {
 
       <div className="w-full max-w-4xl bg-transparent rounded-3xl shadow-2xl flex flex-col md:flex-row">
         {/* Left Section */}
-
         <div className="w-full md:w-1/2 p-8">
           <h1 className="text-3xl font-semibold text-gray-50 mb-4">
             Welcome To <span className="text-green-500">Wallet!</span>
@@ -259,47 +247,27 @@ export default function Register() {
           </div>
 
           <LoginButtons />
-
-          <p className="text-center text-xs text-gray-500 mt-6">
-            Already have an account?{" "}
-            <a href="/login" className="text-green-500 font-semibold">
-              Sign In
-            </a>
-          </p>
         </div>
 
-        {/* Right Section */}
-        <div className="hidden md:flex w-1/2 relative overflow-hidden">
-          {/* Image Slider */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <img
-              src={slides[currentSlide].src}
-              alt="Slide Image"
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-r from-green-500 to-yellow-500 opacity-30"></div>
-            <div className="absolute inset-0 flex flex-col items-center justify-end text-white text-center p-4 pb-10">
-              {" "}
-              {/* Adjusted padding to position text lower */}
-              <h1 className="text-2xl font-bold mb-2">
-                {" "}
-                {/* Added margin bottom to stack texts */}
-                {slides[currentSlide].text}
-              </h1>
-            </div>
-          </div>
-
-          {/* Pagination Indicators */}
-          <div className="absolute bottom-4 left-1/2 w-9 h-2 transform -translate-x-1/2 flex space-x-2">
-            {slides.map((_, index) => (
-              <button
+        {/* Right Section - Slider */}
+        <div className="hidden md:flex md:w-1/2">
+          <div className="relative w-full h-full">
+            {slides.map((slide, index) => (
+              <div
                 key={index}
-                onClick={() => setCurrentSlide(index)}
-                className={`w-3 h-3 rounded-full ${
-                  index === currentSlide ? "bg-white" : "bg-gray-300"
-                } transition`}
-                aria-label={`Go to slide ${index + 1}`}
-              />
+                className={`absolute inset-0 transition-opacity duration-1000 ${
+                  index === currentSlide ? "opacity-100" : "opacity-0"
+                }`}
+              >
+                <img
+                  src={slide.src}
+                  alt={slide.text}
+                  className="object-cover w-full h-full"
+                />
+                <div className="absolute inset-0 flex items-center justify-center text-white text-2xl">
+                  {slide.text}
+                </div>
+              </div>
             ))}
           </div>
         </div>

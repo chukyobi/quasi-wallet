@@ -1,133 +1,122 @@
 "use client";
-import { useState } from 'react';
+
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { signOut, useSession } from "next-auth/react";
+import {
+  HomeIcon,
+  CogIcon,
+  ArrowUpTrayIcon,
+  Bars3Icon,
+} from "@heroicons/react/24/solid";
 
 export default function Dashboard() {
-  const [date, setDate] = useState("Feb 24, 2023");
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/login");
+    }
+  }, [status, router]);
+
+  const handleLogout = () => {
+    signOut({ callbackUrl: "/login" });
+  };
 
   return (
-    <div className="flex h-screen bg-gray-100 text-gray-800">
+    <div className="flex h-screen bg-gray-100">
       {/* Sidebar */}
-      <aside className="w-64 bg-gray-900 text-white flex flex-col justify-between p-4">
+      <aside
+        className={`${
+          isSidebarOpen ? "w-64" : "w-18"
+        } bg-white shadow-md flex flex-col justify-between p-4 transition-all duration-300 ease-in-out`}
+      >
         <div>
-          <div className="mb-8">
-            <h1 className="text-2xl font-bold">Logo</h1>
-          </div>
-          <nav className="space-y-6">
-            <a href="#" className="flex items-center space-x-2 text-lg font-semibold">
-              <span>🏠</span>
-              <span>Dashboard</span>
-            </a>
-            <a href="#" className="flex items-center space-x-2">
-              <span>📊</span>
-              <span>Campaigns</span>
-            </a>
-            <a href="#" className="flex items-center space-x-2">
-              <span>📍</span>
-              <span>Ad Placement</span>
-            </a>
-            <a href="#" className="flex items-center space-x-2">
-              <span>💬</span>
-              <span>Support</span>
-            </a>
-            <a href="#" className="flex items-center space-x-2">
-              <span>⚙️</span>
-              <span>Settings</span>
-            </a>
+          <h2
+            className={`text-2xl font-bold text-gray-700 mb-8 ${
+              isSidebarOpen ? "" : "hidden"
+            }`}
+          >
+            Logo
+          </h2>
+          <nav>
+            <ul>
+              <li className="my-4 flex items-center">
+                <HomeIcon className="w-6 h-6 text-blue-600" />
+                {isSidebarOpen && (
+                  <span className="ml-3 text-blue-600 font-medium">
+                    Dashboard
+                  </span>
+                )}
+              </li>
+            </ul>
           </nav>
         </div>
-        <button className="flex items-center space-x-2 mt-auto bg-gray-700 hover:bg-gray-600 p-2 rounded text-sm">
-          <span>🚪</span>
-          <span>Log out</span>
-        </button>
+        <div className="space-y-4">
+          <button className="w-full bg-gray-200 text-gray-700 p-2 rounded flex items-center">
+            <CogIcon className="w-6 h-6 text-gray-500" />
+            {isSidebarOpen && <span className="ml-3">Settings</span>}
+          </button>
+          <button
+            onClick={handleLogout}
+            className="w-full bg-blue-600 text-white p-2 rounded flex items-center"
+          >
+            <ArrowUpTrayIcon className="w-6 h-6" />
+            {isSidebarOpen && <span className="ml-3">Logout</span>}
+          </button>
+        </div>
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 p-6 space-y-8">
-        {/* Header */}
-        <header className="flex justify-between items-center">
-          <div>
-            <h2 className="text-2xl font-bold">Your Wildcast</h2>
-            <p className="text-gray-600">An overview of your current campaigns, budgets and activities.</p>
-          </div>
-          <div className="text-right">
-            <p className="font-semibold">Tom Rhue</p>
-            <p className="text-gray-500">tom@gowildcast.com</p>
+      <main className="flex flex-col flex-auto">
+        <header className="flex justify-between items-center bg-white h-20 px-4 shadow-md">
+          <button
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            className="p-2 focus:outline-none"
+          >
+            <Bars3Icon className="w-8 h-8 text-gray-700" />
+          </button>
+          <div className="ml-auto flex items-center relative">
+            {session?.user ? (
+              <>
+                <div className="relative w-12 h-12 rounded-full bg-gray-700 flex items-center justify-center text-gray-100 font-bold">
+                  {/* User initials */}
+                  {session.user.name
+                    ?.split(" ")
+                    .map((n) => n[0])
+                    .join("") ?? "User"}
+                  <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-green-500"></span>
+                </div>
+
+                <h1 className="text-md font-bold text-gray-700 ml-2 mr-4">
+                  {session.user.name ?? "User"}
+                </h1>
+              </>
+            ) : (
+              <div className="relative w-12 h-12 rounded-full bg-gray-700 flex items-center justify-center text-gray-100 font-bold">
+                JD
+                
+                <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-green-500"></span>
+              </div>
+            )}
           </div>
         </header>
 
-        {/* Metrics Cards */}
-        <div className="grid grid-cols-3 gap-4">
-          <div className="bg-white p-4 rounded-lg shadow-md text-center">
-            <p className="text-lg font-semibold">Relevancy Score</p>
-            <h3 className="text-2xl font-bold">93.8%</h3>
-            <p className="text-sm text-gray-500 mt-2">+5% than last week</p>
-          </div>
-          <div className="bg-white p-4 rounded-lg shadow-md text-center">
-            <p className="text-lg font-semibold">Confirmed Listeners</p>
-            <h3 className="text-2xl font-bold">390,000</h3>
-            <p className="text-sm text-gray-500 mt-2">+15% than last week</p>
-          </div>
-          <div className="bg-white p-4 rounded-lg shadow-md text-center">
-            <p className="text-lg font-semibold">Unique Podcasts</p>
-            <h3 className="text-2xl font-bold">33</h3>
-            <p className="text-sm text-gray-500 mt-2">-20% than last week</p>
-          </div>
-        </div>
-
-        {/* Campaigns and Placements */}
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold">Campaigns</h3>
-            <div className="flex space-x-2">
-              <button className="bg-gray-200 p-2 rounded">Today</button>
-              <button className="bg-gray-200 p-2 rounded">7 days</button>
-              <button className="bg-gray-200 p-2 rounded">30 days</button>
-              <button className="bg-gray-200 p-2 rounded">All time</button>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-6">
-            <div>
-              <p className="text-lg font-semibold">44</p>
-              <p className="text-gray-500">Campaigns</p>
-              <div className="mt-4">
-                <p className="font-semibold">Business</p>
-                <p className="font-semibold">Technology</p>
-                <p className="font-semibold">Investing</p>
-                <p className="font-semibold">Entrepreneurship</p>
-                <p className="font-semibold">Other</p>
-              </div>
-            </div>
-            <div>
-              <p className="text-lg font-semibold">Placements</p>
-              <p className="text-gray-500">1,200</p>
-              <div className="bg-gray-200 rounded-full h-4 mt-2">
-                <div className="bg-green-500 h-4 rounded-full" style={{ width: "75%" }}></div>
-              </div>
-              <div className="flex justify-between text-sm mt-1">
-                <span>Confirmed</span>
-                <span>Published</span>
-                <span>Pending</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Activity Section */}
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h3 className="text-lg font-semibold">Activity</h3>
-          <div className="space-y-4 mt-4">
-            <div className="flex justify-between items-center">
-              <p className="font-semibold">NFT 365 Podcast</p>
-              <p className="text-sm text-gray-500">Confirmed your ad reach view</p>
-              <p className="text-blue-500 text-sm">Just now</p>
-            </div>
-            <div className="flex justify-between items-center">
-              <p className="font-semibold">NFT 365 Podcast</p>
-              <p className="text-sm text-gray-500">Confirmed your ad reach view</p>
-              <p className="text-blue-500 text-sm">Feb 22, 2023</p>
-            </div>
-            {/* Repeat for additional activity items */}
-          </div>
+        <div className="flex gap-4">
+          <section className="bg-white p-6 ml-6 mt-4 text-gray-600 rounded-lg shadow-md h-64 w-full overflow-y-auto">
+            <h2 className="text-lg font-bold mb-4 text-gray-800">
+              User Dashboard
+            </h2>
+            {session?.user ? (
+              <p className="text-gray-600">
+                Welcome back, {session.user.name ?? "User"}!
+              </p>
+            ) : (
+              <p>Please login to see your dashboard content.</p>
+            )}
+          </section>
         </div>
       </main>
     </div>
