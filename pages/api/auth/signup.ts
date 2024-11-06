@@ -18,7 +18,8 @@ export default async function signup(req: NextApiRequest, res: NextApiResponse) 
       return res.status(409).json({ message: 'User already exists' });
     }
 
-    // Generate OTP and expiration time
+    
+    
     const otp = crypto.randomInt(10000, 99999).toString();
     const otpExpires = new Date(Date.now() + 30 * 60 * 1000); 
     const hashedPassword = await bcrypt.hash(password, 10);

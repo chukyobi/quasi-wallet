@@ -16,10 +16,21 @@ export default function Dashboard() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   useEffect(() => {
+    // Redirect to login page if the user is unauthenticated
     if (status === "unauthenticated") {
       router.push("/login");
     }
   }, [status, router]);
+
+  // If user is still loading (status === 'loading'), show nothing or a loading spinner
+  if (status === "loading") {
+    return <div>Loading...</div>;
+  }
+
+  // Don't render the dashboard if unauthenticated (this will redirect to login)
+  if (status === "unauthenticated") {
+    return null;
+  }
 
   const handleLogout = () => {
     signOut({ callbackUrl: "/login" });

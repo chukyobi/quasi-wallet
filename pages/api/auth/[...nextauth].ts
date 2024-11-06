@@ -12,7 +12,7 @@ export default NextAuth({
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
-        // Ensure credentials are defined
+        
         if (!credentials || !credentials.email || !credentials.password) {
           throw new Error("Credentials are missing");
         }
@@ -21,12 +21,12 @@ export default NextAuth({
           where: { email: credentials.email },
         });
 
-        // Check if user exists and validate password
+     
         if (user && bcrypt.compareSync(credentials.password, user.password)) {
-          return { id: user.id.toString(), name: user.name, email: user.email }; // Convert id to string
+          return { id: user.id.toString(), name: user.name, email: user.email }; 
         }
 
-        return null; // Authentication failed
+        return null; 
       },
     }),
   ],

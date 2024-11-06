@@ -99,7 +99,7 @@ export default function Register() {
       <div className="absolute w-16 h-16 bg-green-500 rounded-full bottom-20 right-16 blur-lg opacity-75"></div>
       <div className="absolute w-20 h-20 bg-yellow-400 rounded-full top-10 left-10 blur-lg opacity-75"></div>
 
-      <div className="w-full max-w-4xl bg-transparent rounded-3xl shadow-2xl flex flex-col md:flex-row">
+      <div className="w-full max-w-4xl bg-transparent rounded-r-3xl  shadow-2xl flex flex-col md:flex-row">
         {/* Left Section */}
         <div className="w-full md:w-1/2 p-8">
           <h1 className="text-3xl font-semibold text-gray-50 mb-4">

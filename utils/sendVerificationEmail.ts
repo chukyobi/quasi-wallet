@@ -1,25 +1,18 @@
 import nodemailer from 'nodemailer';
-import mailgun from 'mailgun-js';
 
-// Mailgun Configuration
-const mailgunClient = mailgun({
-    apiKey: process.env.MAILGUN_API_KEY!,
-    domain: process.env.MAILGUN_DOMAIN!,
-});
-
-
-// Create a Nodemailer transport using the Mailgun transporter
+// Brevo (Sendinblue) Configuration
 const transporter = nodemailer.createTransport({
-    service: 'Mailgun',
+    host: 'smtp-relay.sendinblue.com',
+    port: 587, // Use 465 for SSL or 587 for TLS
+    secure: false, // Use TLS
     auth: {
-        user: process.env.MAILGUN_SMTP_USERNAME!,
-        pass: process.env.MAILGUN_API_PASS!,
+        user: process.env.BREVO_SMTP_USERNAME,  // Your Brevo SMTP username (API Key)
+        pass: process.env.BREVO_SMTP_PASSWORD,  // Your Brevo SMTP password (API Key)
     },
 });
 
-
 /**
- * Sends a verification email using Mailgun.
+ * Sends a verification email using Brevo (Sendinblue).
  * 
  * @param {string} to - The recipient's email address.
  * @param {string} otp - The OTP code to include in the email.
@@ -27,7 +20,7 @@ const transporter = nodemailer.createTransport({
  */
 async function sendVerificationEmail(to: string, otp: string): Promise<boolean> {
     const mailOptions = {
-        from: `YourAppName <noreply@${process.env.MAILGUN_DOMAIN}>`,
+        from: `YourAppName <noreply@yourdomain.com>`,  // Use your own "From" address
         to,
         subject: 'Account Verification',
         html: `
