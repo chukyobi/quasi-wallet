@@ -12,8 +12,8 @@ const mailgunClient = mailgun({
 const transporter = nodemailer.createTransport({
     service: 'Mailgun',
     auth: {
-        user: process.env.MAILGUN_SMTP_USERNAME! || 'postmaster@sandbox23a907e570fc4901abbdc91babfbcc87.mailgun.org',
-        pass: process.env.MAILGUN_API_PASS! || 'f65559fec76248999568d0fe867f0929-f6fe91d3-eb12ea0f',
+        user: process.env.MAILGUN_SMTP_USERNAME!,
+        pass: process.env.MAILGUN_API_PASS!,
     },
 });
 
