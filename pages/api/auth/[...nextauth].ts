@@ -20,16 +20,18 @@ export default NextAuth({
         throw new Error("Google account email is missing.");
       }
 
+      // Check if user exists in the database
       const existingUser = await prisma.user.findUnique({
         where: { email: user.email },
       });
 
+      // If the user does not exist, create them in the database
       if (!existingUser) {
         await prisma.user.create({
           data: {
             name: user.name,
             email: user.email,
-            password: "", // No password since it's OAuth
+            password: "", // Set an empty password for OAuth users
           },
         });
       }
@@ -39,15 +41,18 @@ export default NextAuth({
 
     async session({ session, token }) {
       if (session.user) {
-        session.user.id = token.id as string; // Ensure id is of type string
+        session.user.id = token.id as string;
+        session.user.email = token.email as string; 
+        session.user.name = token.name as string; 
       }
-
       return session;
     },
 
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
+        token.email = user.email; 
+        token.name = user.name; 
       }
       return token;
     },
