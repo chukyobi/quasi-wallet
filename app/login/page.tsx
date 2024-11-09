@@ -7,7 +7,7 @@ import {
   EyeIcon,
   EyeSlashIcon,
 } from "@heroicons/react/24/solid";
-import { signIn } from "next-auth/react";
+import axios from "axios";
 import { useRouter } from "next/navigation";
 
 const slides = [
@@ -26,17 +26,23 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const result = await signIn("credentials", {
-      redirect: false,
-      email,
-      password,
-    });
-    if (result?.error) {
-      setError(result.error);
-    } else if (result) {
-      router.push("/dashboard");  
-    } else {
-      setError("An unexpected error occurred. Please try again.");
+    try {
+
+      const response = await axios.post("/api/auth/login", {
+        email,
+        password,
+      });
+
+      if (response.data.success) {
+      
+        router.push("/dashboard");
+      } else {
+        
+        setError(response.data.message || "Login failed. Please try again.");
+      }
+    } catch (err: any) {
+      
+      setError(err?.response?.data?.message || "An unexpected error occurred. Please try again.");
     }
   };
 

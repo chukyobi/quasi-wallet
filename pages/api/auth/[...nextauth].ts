@@ -1,48 +1,59 @@
-import NextAuth from 'next-auth';
-import CredentialsProvider from 'next-auth/providers/credentials';
-import prisma from '../../../lib/prisma';
-import bcrypt from 'bcryptjs';
+import NextAuth from "next-auth";
+import GoogleProvider from "next-auth/providers/google";
+import prisma from "../../../lib/prisma";
 
 export default NextAuth({
   providers: [
-    CredentialsProvider({
-      name: 'Credentials',
-      credentials: {
-        email: { label: 'Email', type: 'email' },
-        password: { label: 'Password', type: 'password' },
-      },
-      async authorize(credentials) {
-        
-        if (!credentials || !credentials.email || !credentials.password) {
-          throw new Error("Credentials are missing");
-        }
-
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email },
-        });
-
-     
-        if (user && bcrypt.compareSync(credentials.password, user.password)) {
-          return { id: user.id.toString(), name: user.name, email: user.email }; 
-        }
-
-        return null; 
-      },
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
   ],
+
   session: {
-    strategy: 'jwt',
+    strategy: "jwt",
   },
+
   callbacks: {
+    async signIn({ user }) {
+      if (!user.email) {
+        throw new Error("Google account email is missing.");
+      }
+
+      const existingUser = await prisma.user.findUnique({
+        where: { email: user.email },
+      });
+
+      if (!existingUser) {
+        await prisma.user.create({
+          data: {
+            name: user.name,
+            email: user.email,
+            password: "", // No password since it's OAuth
+          },
+        });
+      }
+
+      return true;
+    },
+
     async session({ session, token }) {
-      session.user = token;
+      if (session.user) {
+        session.user.id = token.id as string; // Ensure id is of type string
+      }
+
       return session;
     },
+
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
       }
       return token;
+    },
+
+    async redirect({ baseUrl }) {
+      return `${baseUrl}/dashboard`;
     },
   },
 });

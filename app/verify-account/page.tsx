@@ -41,18 +41,18 @@ export default function Verify({ email }: VerifyProps) {
     return () => clearInterval(countdown);
   }, []);
 
-  // const handleResendCode = async () => {
-  //   setError("");
-  //   try {
-  //     await axios.post("/api/auth/resendOtp", { email });
-  //     const newEndTime = new Date(Date.now() + 15 * 60 * 1000);
-  //     localStorage.setItem("otpEndTime", newEndTime.toString());
-  //     setTimer(15 * 60);
-  //     setCodeExpired(false);
-  //   } catch (err) {
-  //     setError("Failed to resend OTP. Please try again.");
-  //   }
-  // };
+  const handleResendCode = async () => {
+    setError("");
+    try {
+      await axios.post("/api/auth/resendOtp", { email });
+      const newEndTime = new Date(Date.now() + 15 * 60 * 1000);
+      localStorage.setItem("otpEndTime", newEndTime.toString());
+      setTimer(15 * 60);
+      setCodeExpired(false);
+    } catch (err) {
+      setError("Failed to resend OTP. Please try again.");
+    }
+  };
 
   const handleOtpChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
     const value = e.target.value.slice(-1);
@@ -120,7 +120,7 @@ export default function Verify({ email }: VerifyProps) {
             Didn’t receive the code?{" "}
             <button
               type="button"
-              // onClick={handleResendCode}
+              onClick={handleResendCode}
               className="text-blue-500 underline"
               disabled={!codeExpired && timer > 0}
             >

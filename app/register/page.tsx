@@ -10,6 +10,7 @@ import {
   UserIcon,
 } from "@heroicons/react/24/solid";
 import axios from "axios";
+import { useRouter } from "next/navigation";
 
 // images for the slider
 const slides = [
@@ -28,6 +29,7 @@ const slides = [
 ];
 
 export default function Register() {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [email, setEmail] = useState("");
@@ -42,7 +44,7 @@ export default function Register() {
   const passwordRegex =
     /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (password !== confirmPassword) {
@@ -51,19 +53,19 @@ export default function Register() {
     }
 
     try {
-      const response = await axios.post('/api/auth/signup', {
+      const response = await axios.post("/api/auth/signup", {
         email,
         name,
         password,
       });
-
-      if (response.status === 201) {
-        window.location.href = "/verify-account";
+    
+      if (response.data.success) {
+        router.push("/verify-account");
+      } else {
+        setError(response.data.message || "Signup failed. Please try again.");
       }
     } catch (err: any) {
-      setError(
-        err.response?.data?.message || "Registration failed. Please try again."
-      );
+      setError(err?.response?.data?.message || "An unexpected error occurred. Please try again.");
     }
   };
 
