@@ -1,14 +1,13 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import prisma from '../../../lib/prisma';
-import { setLoginSession } from '../../../lib/auth';
 import { parse } from 'cookie';
+import { createUserWithWallet } from '../../../lib/creatUser'; 
 
 interface UserData {
   email: string;
-  name: string | null; 
+  name: string;
   hashedPassword: string;
   otpExpires: Date;
-  otp: string; 
+  otp: string;
 }
 
 export default async function verifyOtp(req: NextApiRequest, res: NextApiResponse) {
@@ -31,10 +30,10 @@ export default async function verifyOtp(req: NextApiRequest, res: NextApiRespons
       return res.status(400).json({ message: 'Invalid or missing user data' });
     }
 
-    const { email, name, hashedPassword, otp, otpExpires } = userData;
+    const { email, name, hashedPassword, otp: storedOtp, otpExpires } = userData;
 
     // Validate OTP
-    if (otp.trim() !== userData.otp) {
+    if (otp.trim() !== storedOtp) {
       return res.status(400).json({ message: 'Invalid OTP' });
     }
 
@@ -42,26 +41,19 @@ export default async function verifyOtp(req: NextApiRequest, res: NextApiRespons
       return res.status(400).json({ message: 'OTP has expired' });
     }
 
-    const user = await prisma.user.create({
-      data: {
-        email,
-        name: name || '', 
-        password: hashedPassword,
-      },
+    // Create user and wallet using the createUserWithWallet function
+    await createUserWithWallet({
+      email,
+      name,
+      hashedPassword,
     });
 
-    const session = {
-      email: user.email,
-      name: user.name || '',
-    };
-
-    if (session.email && typeof session.name === 'string') {
-      await setLoginSession(res, session);
-
-      return res.status(200).json({ message: 'User verified and created successfully', user });
-    } else {
-      return res.status(400).json({ message: 'Invalid session data' });
-    }
+    // User and wallet are created, NextAuth will automatically handle the session.
+    // Return a success response with a redirect URL.
+    return res.status(200).json({
+      message: 'User verified and created successfully',
+      redirectUrl: '/dashboard', // Provide a URL to redirect after success
+    });
   } catch (error) {
     console.error('Error verifying OTP or creating user:', error);
     return res.status(500).json({ message: 'Something went wrong' });

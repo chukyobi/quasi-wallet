@@ -9,10 +9,22 @@ generator client {
 
 model User {
   id        Int      @id @default(autoincrement())
+  name      String
   email     String   @unique
-  name      String?
   password  String?
-
- 
+  wallets   Wallet[] // One-to-many relation
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt // Add @default(now()) here
 }
 
+
+model Wallet {
+  id        Int      @id @default(autoincrement())
+  userId    Int      // Foreign key to the User model
+  user      User     @relation(fields: [userId], references: [id]) // Link to the User model
+  walletId  String   @unique // Unique identifier for the wallet (could be a wallet address or ID)
+  balance   Float    @default(0.0) // Wallet balance
+  currency  String   // Currency type (e.g., USD, BTC, ETH)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
