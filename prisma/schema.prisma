@@ -14,14 +14,13 @@ model User {
   password  String?
   wallets   Wallet[] // One-to-many relation
   createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt // Add @default(now()) here
+  updatedAt DateTime @default(now()) @updatedAt
 }
-
 
 model Wallet {
   id        Int      @id @default(autoincrement())
-  userId    Int      // Foreign key to the User model
-  user      User     @relation(fields: [userId], references: [id]) // Link to the User model
+  email     String   // Foreign key to the User model based on email
+  user      User     @relation(fields: [email], references: [email]) // Link to the User model by email
   walletId  String   @unique // Unique identifier for the wallet (could be a wallet address or ID)
   balance   Float    @default(0.0) // Wallet balance
   currency  String   // Currency type (e.g., USD, BTC, ETH)

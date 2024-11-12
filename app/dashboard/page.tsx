@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 import { Session } from "next-auth";
 import TradingView1 from "../../components/TradingView1";
-import TradingViewMarketQuotes from "../../components/TradingViewMarketQuotes";
+//import TradingViewMarketQuotes from "../../components/TradingViewMarketQuotes";
 import {
   RectangleGroupIcon,
   ChartPieIcon,
@@ -20,18 +20,6 @@ import {
   PlusIcon,
 } from "@heroicons/react/24/solid";
 
-// import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-// import {
-//   faCog,
-//   faMoneyBillTransfer,
-//   faArrowUpRightFromSquare,
-//   faBars,
-//   faWallet,
-// } from "@fortawesome/free-solid-svg-icons";
-
-
-
-// all props interfaces
 interface SidebarProps {
   isSidebarOpen: boolean;
   setIsSidebarOpen: (isOpen: boolean) => void;
@@ -42,37 +30,63 @@ interface SidebarProps {
 
 interface MainContentProps {
   isSidebarOpen: boolean;
-  setIsSidebarOpen: Dispatch<SetStateAction<boolean>>;
+  setIsSidebarOpen: React.Dispatch<React.SetStateAction<boolean>>;
   session: Session | null;
   activeTab: string;
-  setActiveTab: Dispatch<SetStateAction<string>>;
+  setActiveTab: React.Dispatch<React.SetStateAction<string>>;
+  userId: string | undefined;
+  userName: string | null;
 }
 
 interface NavbarProps {
-  session: any;
+  session: Session | null;
   isSidebarOpen: boolean;
-  setIsSidebarOpen: (isOpen: boolean) => void;
+  setIsSidebarOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  userName: string | null;
 }
 
 interface TabContentProps {
   activeTab: string;
+  userId: string | undefined;
 }
 
 export default function Dashboard() {
   const { data: session, status } = useSession();
+
   const router = useRouter();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
+  const [userName, setUserName] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/login");
     }
-  }, [status, router]);
 
-  if (status === "unauthenticated") {
-    return null;
-  }
+    if (status === "authenticated" && session?.user?.email) {
+      const userId = session.user.email;
+      setUserId(userId);
+
+      const fetchUserName = async () => {
+        try {
+          const response = await fetch(`/api/user/${userId}`);
+          
+          const data = await response.json();
+
+          if (response.ok) {
+            setUserName(data.name);
+          } else {
+            console.error(data.message);
+          }
+        } catch (error) {
+          console.error("Error fetching user name:", error);
+        }
+      };
+
+      fetchUserName();
+    }
+  }, [status, session, router]);
 
   const handleLogout = () => {
     signOut({ callbackUrl: "/login" });
@@ -94,6 +108,8 @@ export default function Dashboard() {
         session={session}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
+        userId={userId}
+        userName={userName} // Pass userName to MainContent
       />
     </div>
   );
@@ -101,7 +117,7 @@ export default function Dashboard() {
 
 function Sidebar({
   isSidebarOpen,
-  
+
   handleLogout,
   activeTab,
   setActiveTab,
@@ -198,7 +214,9 @@ function MainContent({
   setIsSidebarOpen,
   session,
   activeTab,
- 
+  setActiveTab,
+  userId,
+  userName,
 }: MainContentProps) {
   return (
     <main className="flex flex-col flex-auto overflow-hidden">
@@ -206,13 +224,19 @@ function MainContent({
         session={session}
         isSidebarOpen={isSidebarOpen}
         setIsSidebarOpen={setIsSidebarOpen}
+        userName={userName}
       />
-      <TabContent activeTab={activeTab} />
+      <TabContent activeTab={activeTab} userId={userId} />
     </main>
   );
 }
 
-function Navbar({ session, isSidebarOpen, setIsSidebarOpen }: NavbarProps) {
+function Navbar({
+  session,
+  isSidebarOpen,
+  setIsSidebarOpen,
+  userName,
+}: NavbarProps) {
   return (
     <header className="flex justify-between items-center bg-white h-20 z-20 px-4 shadow-md py-3">
       <button
@@ -225,14 +249,14 @@ function Navbar({ session, isSidebarOpen, setIsSidebarOpen }: NavbarProps) {
         {session?.user && (
           <div className="flex items-center">
             <div className="relative w-12 h-12 rounded-full bg-gray-700 flex items-center justify-center text-gray-100 font-bold">
-              {session.user.name
+              {userName
                 ?.split(" ")
                 .map((n: string) => n[0])
                 .join("") ?? "User"}
               <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-green-500"></span>
             </div>
             <h1 className="text-md font-bold text-gray-700 ml-2">
-              {session.user.name ?? "User"}
+              {userName ?? "User"}
             </h1>
           </div>
         )}
@@ -241,9 +265,12 @@ function Navbar({ session, isSidebarOpen, setIsSidebarOpen }: NavbarProps) {
   );
 }
 
-function TabContent({ activeTab }: TabContentProps) {
+function TabContent({ activeTab, userId }: TabContentProps) {
   const [showWalletModal, setShowWalletModal] = useState(false);
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
+
+  const [balance, setBalance] = useState<number | null>(null);
+
   const [isVisible, setIsVisible] = useState(true); // To toggle wallet value visibility
   const [isPnlVisible, setIsPnlVisible] = useState(true); // To toggle PnL visibility
 
@@ -255,7 +282,35 @@ function TabContent({ activeTab }: TabContentProps) {
     setIsPnlVisible(!isPnlVisible);
   };
 
-  const isProfit = true; // Replace `true` with any logic needed to determine profit
+  // Fetch wallet balance when userId is available
+  const fetchBalance = async () => {
+    if (!userId) {
+      console.error("No user ID provided");
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/wallet/${userId}`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch wallet balance");
+      }
+      const data = await response.json();
+      
+      setBalance(data.balance);
+    } catch (error) {
+      console.error("Error fetching wallet balance:", error);
+    }
+  };
+
+  
+  useEffect(() => {
+    if (userId) {
+      fetchBalance();
+    }
+  }, [userId]);
+
+
+  const isProfit = true; 
 
   const backupWallets = [
     {
@@ -337,7 +392,11 @@ function TabContent({ activeTab }: TabContentProps) {
 
                 {/* Wallet Value Section */}
                 <div className="text-5xl font-bold text-black mb-2">
-                  {isVisible ? "$10,000" : "****"}
+                  {isVisible
+                    ? balance !== null
+                      ? `$${balance?.toFixed(2)}`
+                      : "No Wallet Found"
+                    : "****"}
                 </div>
 
                 {/* PnL Section */}
