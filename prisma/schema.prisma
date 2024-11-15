@@ -13,6 +13,7 @@ model User {
   email     String   @unique
   password  String?
   wallets   Wallet[] // One-to-many relation
+  transactions  Transaction[]  // One-to-many relation with Transaction
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 }
@@ -26,4 +27,14 @@ model Wallet {
   currency  String   // Currency type (e.g., USD, BTC, ETH)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+model Transaction {
+  id              Int       @id @default(autoincrement())
+  userEmail       String    // Foreign key to User's email
+  transactionType String    // e.g., 'deposit' or 'withdraw'
+  amount          Float
+  status          String    // e.g., 'pending' or 'successful'
+  currency        String    // e.g., 'BTC', 'ETH'
+  transactionDate DateTime  @default(now())
+  user            User      @relation(fields: [userEmail], references: [email])
 }
