@@ -1,16 +1,14 @@
 import nodemailer from 'nodemailer';
 
-// Brevo (Sendinblue) Configuration
 const transporter = nodemailer.createTransport({
-    host: 'smtp-relay.sendinblue.com',
-    port: 587, // Use 465 for SSL or 587 for TLS
-    secure: false, // Use TLS
+    host: process.env.SMTP_HOST,
+    port: parseInt(process.env.SMTP_PORT || "587"),
+    secure: false, // Use true for 465, false for other ports
     auth: {
-        user: process.env.BREVO_SMTP_USERNAME,  // Your Brevo SMTP username (API Key)
-        pass: process.env.BREVO_SMTP_PASSWORD,  // Your Brevo SMTP password (API Key)
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASSWORD,
     },
-});
-
+  });
 /**
  * Sends a verification email using Brevo (Sendinblue).
  * 

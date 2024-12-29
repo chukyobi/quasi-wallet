@@ -15,26 +15,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
+   
     const user = await prisma.user.findUnique({
       where: { email: userId },
-      include: { wallets: true },
+      include: { backupWallets: true },
     });
-
     if (!user) {
-      console.log(`No user found with email: ${userId}`);
       return res.status(404).json({ message: "User not found" });
     }
-    const wallet = user.wallets[0];
 
-    if (!wallet) {
-     
-      return res.status(404).json({ message: "Wallet not found" });
+    const backupWallets = user.backupWallets;  
+
+ 
+    if (!backupWallets || backupWallets.length === 0) {
+      return res.status(404).json({ message: "No backup wallets found" });
     }
-
-   
-    return res.status(200).json({ balance: wallet.balance });
+    return res.status(200).json({ wallets: backupWallets });
   } catch (error) {
-    console.error("Error fetching wallet data:", error);
-    return res.status(500).json({ message: "Error fetching wallet data" });
+    console.error("Error fetching backup wallets:", error);
+    return res.status(500).json({ message: "Error fetching backup wallets" });
   }
 }

@@ -171,7 +171,7 @@ export default function Dashboard() {
       case "Dashboard":
         return (
           <>
-           <DashboardPage />
+           <DashboardPage  />
           </>
         );
       case "Profile":
@@ -212,13 +212,13 @@ export default function Dashboard() {
     <div className="flex h-screen bg-black text-white">
       {/* Left Sidebar */}
       <div
-        className={`w-64 border-r border-zinc-800 p-6 ${
+        className={`w-64 border-r border-zinc-800 p-6 transition-all duration-300 ${
           isSidebarOpen ? "block" : "hidden"
         }`}
       >
         <div className="flex items-center gap-2 mb-8">
           <div className="h-8 w-8 rounded-full bg-yellow-400" />
-          <span className="font-semibold">Goldmanprivate</span>
+          <span className="font-semibold">Logo</span>
         </div>
 
         <div className="mb-8">

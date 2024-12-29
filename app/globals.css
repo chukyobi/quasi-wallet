@@ -128,3 +128,15 @@ button.primary {
     @apply bg-background text-foreground;
   }
 }
+@keyframes zoomInOut {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.5);
+  }
+}
+
+.animate-zoom {
+  animation: zoomInOut 2s infinite;
+}
