@@ -1,18 +1,17 @@
 "use client";
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
-type VerifyProps = {
-  email: string;
-};
-
-export default function Verify({ email }: VerifyProps) {
+export default function Verify() {
+  const router = useRouter();
+  const searchParams = useSearchParams();  // Use the searchParams hook to get query parameters
+  const email = searchParams?.get("email");  // Get the email from the query string
+  
   const [otp, setOtp] = useState(Array(5).fill(""));
   const [error, setError] = useState("");
   const [timer, setTimer] = useState(0);
   const [codeExpired, setCodeExpired] = useState(false);
-  const router = useRouter();
 
   // Initialize or retrieve the countdown timer
   useEffect(() => {
@@ -45,6 +44,10 @@ export default function Verify({ email }: VerifyProps) {
   const handleResendCode = async () => {
     setError("");
     try {
+      if (!email) {
+        setError("Email is missing.");
+        return;
+      }
       await axios.post("/api/auth/resendOtp", { email });
       const newEndTime = new Date(Date.now() + 15 * 60 * 1000);
       localStorage.setItem("otpEndTime", newEndTime.toString());
@@ -68,7 +71,7 @@ export default function Verify({ email }: VerifyProps) {
     e.preventDefault();
     try {
       const otpString = otp.join("");
-      const response = await axios.post("/api/auth/verifyOtp", { otp: otpString });
+      const response = await axios.post("/api/auth/verifyOtp", { otp: otpString, email });
       if (response.status === 200) {
         localStorage.removeItem("otpEndTime");
         router.push("/login");
@@ -79,8 +82,8 @@ export default function Verify({ email }: VerifyProps) {
   };
 
   const formatTimer = () => {
-    const minutes = Math.floor(timer / 60).toString().padStart(2, "0");
-    const seconds = (timer % 60).toString().padStart(2, "0");
+    const minutes = Math.floor(timer / 60).toString().padStart(2, '0');
+    const seconds = (timer % 60).toString().padStart(2, '0');
     return `${minutes}:${seconds}`;
   };
 
@@ -129,7 +132,7 @@ export default function Verify({ email }: VerifyProps) {
             </button>
           </p>
 
-          <button type="submit" className="bg-green-500 text-white px-4 py-2 rounded w-full">
+          <button type="submit" className="bg-green-500 text-white px-4 py-2 rounded w-full" disabled={codeExpired}>
             Verify
           </button>
         </form>

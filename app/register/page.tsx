@@ -60,7 +60,7 @@ export default function Register() {
       });
     
       if (response.data.success) {
-        router.push("/verify-account");
+        router.push(`/verify-account?email=${email}`);
       } else {
         setError(response.data.message || "Signup failed. Please try again.");
       }
