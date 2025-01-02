@@ -110,7 +110,7 @@ export default function Register() {
         {/* Left Section */}
         <div className="w-full md:w-1/2 p-8">
           <h1 className="text-3xl font-semibold text-gray-50 mb-4">
-            Welcome To <span className="text-green-500">Wallet!</span>
+            Welcome To <span className="text-green-500">Goldman!</span>
           </h1>
           <p className="text-gray-500 mb-8 text-sm">
             Start managing your finances faster and better
@@ -255,7 +255,7 @@ export default function Register() {
           <LoginButtons />
           <p className="text-center text-gray-500 mt-6">
             Already have an account?{" "}
-            <a href="/register" className="text-green-500 font-semibold">
+            <a href="/login" className="text-green-500 font-semibold">
               Login
             </a>
           </p>

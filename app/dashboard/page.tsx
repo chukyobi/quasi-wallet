@@ -218,7 +218,7 @@ export default function Dashboard() {
       >
         <div className="flex items-center gap-2 mb-8">
           <div className="h-8 w-8 rounded-full bg-yellow-400" />
-          <span className="font-semibold">Logo</span>
+          <span className="font-semibold">Goldman Private</span>
         </div>
 
         <div className="mb-8">

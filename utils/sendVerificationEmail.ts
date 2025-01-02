@@ -16,9 +16,10 @@ const transporter = nodemailer.createTransport({
  * @param {string} otp - The OTP code to include in the email.
  * @returns {Promise<boolean>} - Returns true if email sent successfully.
  */
+
 async function sendVerificationEmail(to: string, otp: string): Promise<boolean> {
     const mailOptions = {
-        from: `YourAppName <noreply@yourdomain.com>`,  // Use your own "From" address
+        from: `Goldman Private <no-reply@goldmanprivate.com>`,   
         to,
         subject: 'Account Verification',
         html: `
