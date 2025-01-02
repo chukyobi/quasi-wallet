@@ -209,7 +209,7 @@ export default function HomePage() {
         >
           <div className={`max-xl`}>
             <h1 className="text-5xl sm:text-7xl lg:text-7xl font-bold mb-4">
-              A Next-Genzee <br />
+              A Next-Genz <br />
               <span className="relative">
                 Quantum Ledger for Secure Assets
                 <span className="absolute inset-0 bottom-20 top-4 -z-10 w-40 sm:w-80 bg-yellow-400 blur-xs px-2 py-1"></span>
@@ -222,7 +222,12 @@ export default function HomePage() {
 
             <div className="flex justify-center lg:justify-start space-x-4">
               <button className="bg-yellow-400 text-black px-4 sm:px-6 py-2 rounded-lg font-semibold text-xs sm:text-sm hover:bg-yellow-500 transition-all duration-300">
-                Get Started
+                <Link
+
+                  href="/login"
+                >
+                  Get Started
+                </Link>
               </button>
               <button className="bg-gray-800 flex items-center gap-1 text-white px-4 sm:px-6 py-2 rounded-lg font-bold text-xs sm:text-sm hover:bg-gray-700 transition-all duration-300">
                 See How it Works{" "}
@@ -674,11 +679,10 @@ export default function HomePage() {
                         {[...Array(5)].map((_, i) => (
                           <Star
                             key={i}
-                            className={`h-5 w-5 ${
-                              i < testimonial.rating
+                            className={`h-5 w-5 ${i < testimonial.rating
                                 ? "fill-yellow-400 text-yellow-400"
                                 : "text-gray-200"
-                            }`}
+                              }`}
                           />
                         ))}
                         <span className="ml-2 text-sm text-gray-500">

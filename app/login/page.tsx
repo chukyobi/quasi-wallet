@@ -34,14 +34,14 @@ export default function LoginPage() {
       });
 
       if (response.data.success) {
-      
+
         router.push("/dashboard");
       } else {
-        
+
         setError(response.data.message || "Login failed. Please try again.");
       }
     } catch (err: any) {
-      
+
       setError(err?.response?.data?.message || "An unexpected error occurred. Please try again.");
     }
   };
@@ -94,9 +94,8 @@ export default function LoginPage() {
               <button
                 key={index}
                 onClick={() => setCurrentSlide(index)}
-                className={`w-3 h-3 rounded-full ${
-                  index === currentSlide ? "bg-white" : "bg-gray-300"
-                } transition`}
+                className={`w-3 h-3 rounded-full ${index === currentSlide ? "bg-white" : "bg-gray-300"
+                  } transition`}
                 aria-label={`Go to slide ${index + 1}`}
               />
             ))}
@@ -115,17 +114,19 @@ export default function LoginPage() {
           <form className="space-y-4" onSubmit={handleSubmit}>
             {/* Email Input */}
             <div>
-              <span className="flex w-full px-4 py-3 rounded-lg gap-2 bg-gray-100 border-gray-50 text-gray-800">
+              <span className="flex w-full px-4 py-3 rounded-lg gap-2 bg-gray-100 text-gray-800">
                 <EnvelopeIcon className="w-5 h-6 text-gray-500" />
                 <input
                   type="email"
                   id="email"
-                  placeholder="you@example.com"
+                  placeholder="you@email.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full bg-gray-100 text-sm"
+                  style={{ border: 'none' }}
+                  className="w-full bg-gray-100 text-sm border-none"
                 />
               </span>
+
             </div>
 
             {/* Password Input */}

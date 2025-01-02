@@ -58,7 +58,7 @@ export default function Register() {
         name,
         password,
       });
-    
+
       if (response.data.success) {
         router.push(`/verify-account?email=${email}`);
       } else {
@@ -78,8 +78,13 @@ export default function Register() {
   };
 
   const validatePassword = (password: string) => {
-    setIsValidPassword(passwordRegex.test(password));
+    if (password.length >= 8) {
+      setIsValidPassword(passwordRegex.test(password));
+    } else {
+      setIsValidPassword(false);
+    }
   };
+
 
   const validateConfirmPassword = (confirmPassword: string) => {
     setIsValidConfirmPassword(confirmPassword === password);
@@ -163,11 +168,11 @@ export default function Register() {
                     setPassword(e.target.value);
                     validatePassword(e.target.value);
                   }}
-                  className={`bg-gray-100 border-none outline-none text-gray-500 text-sm ${
-                    !isValidPassword && password ? "border-red-500" : ""
-                  }`}
+                  className={`bg-gray-100 border-none outline-none text-gray-500 text-sm ${!isValidPassword && password ? "border-red-500" : ""
+                    }`}
                   required
                 />
+
                 <button
                   type="button"
                   onClick={togglePasswordVisibility}
@@ -183,7 +188,7 @@ export default function Register() {
               </span>
               {!isValidPassword && password && (
                 <p className="text-red-500 text-xs">
-                  Password must be at least 8 characters long and include a
+                  Password must be 8 characters long and include a
                   capital letter, number, and special character.
                 </p>
               )}
@@ -204,11 +209,10 @@ export default function Register() {
                     setConfirmPassword(e.target.value);
                     validateConfirmPassword(e.target.value);
                   }}
-                  className={`bg-gray-100 border-none outline-none text-gray-500 text-sm ${
-                    !isValidConfirmPassword && confirmPassword
+                  className={`bg-gray-100 border-none outline-none text-gray-500 text-sm ${!isValidConfirmPassword && confirmPassword
                       ? "border-red-500"
                       : ""
-                  }`}
+                    }`}
                   required
                 />
                 <button
@@ -249,6 +253,12 @@ export default function Register() {
           </div>
 
           <LoginButtons />
+          <p className="text-center text-gray-500 mt-6">
+            Already have an account?{" "}
+            <a href="/register" className="text-green-500 font-semibold">
+              Login
+            </a>
+          </p>
         </div>
 
         {/* Right Section - Slider */}
@@ -257,9 +267,8 @@ export default function Register() {
             {slides.map((slide, index) => (
               <div
                 key={index}
-                className={`absolute inset-0 transition-opacity duration-1000 ${
-                  index === currentSlide ? "opacity-100" : "opacity-0"
-                }`}
+                className={`absolute inset-0 transition-opacity duration-1000 ${index === currentSlide ? "opacity-100" : "opacity-0"
+                  }`}
               >
                 <img
                   src={slide.src}
