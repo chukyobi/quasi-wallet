@@ -209,7 +209,7 @@ export default function HomePage() {
         >
           <div className={`max-xl`}>
             <h1 className="text-5xl sm:text-7xl lg:text-7xl font-bold mb-4">
-              A Next-Genz <br />
+              A Next-Gen <br />
               <span className="relative">
                 Quantum Ledger for Secure Assets
                 <span className="absolute inset-0 bottom-20 top-4 -z-10 w-40 sm:w-80 bg-yellow-400 blur-xs px-2 py-1"></span>
