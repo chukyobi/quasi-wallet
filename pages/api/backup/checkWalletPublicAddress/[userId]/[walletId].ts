@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import prisma  from "@/lib/prisma";  // adjust path to your Prisma client import
+import prisma from "@/lib/prisma";  // adjust path to your Prisma client import
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { userId, walletId } = req.query;
