@@ -73,6 +73,28 @@ const WalletModal: React.FC<WalletModalProps> = ({
     setPreloader(true);
     setDynamicError(null);
 
+    // Step 1: Check if the selected wallet has a public address in the database
+    if (selectedWallet?.id) {
+      try {
+        const response = await fetch(`/api/backup/checkWalletPublicAddress/${userId}/${selectedWallet.id}`);
+        const data = await response.json();
+
+        // If the wallet already has a public address, show success modal
+        if (data.publicAddress) {
+          setModalStep("success");
+          setPreloader(false);
+          return;
+        }
+
+      } catch (err: unknown) {
+        setDynamicError("Error checking wallet public address.");
+        setModalStep("error");
+        setPreloader(false);
+        return;
+      }
+    }
+
+    // Step 2: If no public address found, proceed with wallet connection
     setTimeout(async () => {
       setModalStep("connecting");
       setPreloader(false);
@@ -287,19 +309,11 @@ const WalletModal: React.FC<WalletModalProps> = ({
                 setBackupData({ ...backupData, privateKey: e.target.value })
               }
             />
-            <Input
-              placeholder="Enter QR Code Data (optional)"
-              value={backupData.qrCodeData}
-              onChange={(e) =>
-                setBackupData({ ...backupData, qrCodeData: e.target.value })
-              }
-            />
-
-            <div className="flex justify-center gap-2">
-              <Button variant="outline" onClick={goBack}>
+            <div className="space-x-2 text-center">
+              <Button onClick={saveManualData}>Save</Button>
+              <Button onClick={goBack} variant="outline">
                 Go Back
               </Button>
-              <Button onClick={saveManualData}>Save Wallet Data</Button>
             </div>
           </div>
         </DialogContent>
