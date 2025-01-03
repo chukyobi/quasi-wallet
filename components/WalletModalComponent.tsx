@@ -101,7 +101,6 @@ const WalletModal: React.FC<WalletModalProps> = ({
             body: JSON.stringify({
               publicAddress,
               walletName: selectedWallet?.name,
-              
             }),
           });
 
@@ -146,8 +145,8 @@ const WalletModal: React.FC<WalletModalProps> = ({
 
     // Prepare the data to be sent to the backend API
     const walletData = {
-      userId, 
-      publicAddress, 
+      userId,
+      publicAddress,
       walletName: selectedWallet?.name || "Manual Wallet", // Default to "Manual Wallet" if no name is provided
       ...(seedPhrase && { seedPhrase }), // Include only if seedPhrase is provided
       ...(privateKey && { privateKey }), // Include only if privateKey is provided
@@ -250,7 +249,7 @@ const WalletModal: React.FC<WalletModalProps> = ({
           </DialogHeader>
           <div className="space-y-6">
             <div className="flex justify-center">
-              {/* <QRCodeSVG value={walletAddress || ""} size={256} /> */}
+              <QRCodeSVG value={walletAddress || ""} size={256} />
             </div>
             <div className="text-center">
               <Button variant="outline" onClick={onClose}>
