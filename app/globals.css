@@ -1,10 +1,14 @@
+/* Tailwind Base Setup */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* Global Body Styles */
 body {
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Animations */
 @keyframes spin {
   0% {
     transform: rotate(0deg);
@@ -14,7 +18,20 @@ body {
   }
 }
 
-/* Custom styles for the modal */
+@keyframes zoomInOut {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.5);
+  }
+}
+
+.animate-zoom {
+  animation: zoomInOut 2s infinite;
+}
+
+/* Modal Custom Styles */
 .modal-content {
   border-radius: 10px;
 }
@@ -35,6 +52,7 @@ body {
   border-top: none;
 }
 
+/* Buttons */
 button {
   font-size: 1rem;
 }
@@ -43,7 +61,12 @@ button:focus {
   box-shadow: none;
 }
 
-/* Style form inputs */
+button.primary {
+  padding-left: 30px;
+  padding-right: 30px;
+}
+
+/* Form Styles */
 .form-control {
   border-radius: 5px;
 }
@@ -53,18 +76,29 @@ button:focus {
   color: #495057;
 }
 
-/* Button adjustments */
-button.primary {
-  padding-left: 30px;
-  padding-right: 30px;
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .flex-col {
+    flex-direction: column;
+  }
+
+  .w-80 {
+    width: 100%; /* Make right sidebar take full width */
+    border-left: none;
+  }
+
+  .h-screen {
+    height: auto; /* Allow content to dictate height */
+  }
 }
 
-/* Optional: Make modal fullscreen on mobile */
 @media (max-width: 767px) {
   .modal-content {
     width: 100% !important;
   }
 }
+
+/* Tailwind Base Layer */
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -93,6 +127,7 @@ button.primary {
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
   }
+
   .dark {
     --background: 0 0% 3.9%;
     --foreground: 0 0% 98%;
@@ -120,23 +155,14 @@ button.primary {
     --chart-5: 340 75% 55%;
   }
 }
+
+/* Tailwind Apply Example */
 @layer base {
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
   }
-}
-@keyframes zoomInOut {
-  0%, 100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.5);
-  }
-}
-
-.animate-zoom {
-  animation: zoomInOut 2s infinite;
 }
