@@ -27,21 +27,17 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-
       const response = await axios.post("/api/auth/login", {
         email,
         password,
       });
 
       if (response.data.success) {
-      
         router.push("/dashboard");
       } else {
-        
         setError(response.data.message || "Login failed. Please try again.");
       }
     } catch (err: any) {
-      
       setError(err?.response?.data?.message || "An unexpected error occurred. Please try again.");
     }
   };
@@ -64,11 +60,11 @@ export default function LoginPage() {
       <div className="absolute w-16 h-16 bg-green-500 rounded-full bottom-20 right-16 blur-lg opacity-75"></div>
       <div className="absolute w-20 h-20 bg-yellow-400 rounded-full top-10 left-10 blur-lg opacity-75"></div>
 
-      <div className="w-full max-w-4xl bg-transparent rounded-3xl shadow-2xl flex">
+      <div className="w-full max-w-4xl bg-transparent rounded-3xl shadow-2xl flex flex-col md:flex-row">
         {/* Left Section */}
-        <div className=" md:flex w-1/2 relative overflow-hidden">
+        <div className="hidden md:flex w-full md:w-1/2 relative overflow-hidden h-64 md:h-auto">
           {/* Floating Card */}
-          <div className="absolute top-10 left-[-80px] bg-white shadow-xl rounded-lg p-6 w-60 h-40 transform transition-transform duration-300 hover:translate-x-5">
+          <div className="absolute top-10 left-4 md:left-[-80px] bg-white shadow-xl rounded-lg p-6 w-60 h-40 transform transition-transform duration-300 hover:translate-x-5">
             <h2 className="text-xl font-semibold text-gray-800 mb-2">Secure Blockchain</h2>
             <p className="text-gray-600 text-sm">
               Experience enhanced security and efficiency with our blockchain solutions.
@@ -84,7 +80,7 @@ export default function LoginPage() {
             />
             <div className="absolute inset-0 bg-gradient-to-r from-green-500 to-yellow-500 opacity-30"></div>
             <div className="absolute inset-0 flex flex-col items-center justify-end text-white text-center p-4 pb-10">
-              <h1 className="text-2xl font-bold mb-2">{slides[currentSlide].text}</h1>
+              <h1 className="text-lg md:text-2xl font-bold mb-2">{slides[currentSlide].text}</h1>
             </div>
           </div>
 
@@ -94,9 +90,8 @@ export default function LoginPage() {
               <button
                 key={index}
                 onClick={() => setCurrentSlide(index)}
-                className={`w-3 h-3 rounded-full ${
-                  index === currentSlide ? "bg-white" : "bg-gray-300"
-                } transition`}
+                className={`w-3 h-3 rounded-full ${index === currentSlide ? "bg-white" : "bg-gray-300"
+                  } transition`}
                 aria-label={`Go to slide ${index + 1}`}
               />
             ))}
@@ -104,8 +99,8 @@ export default function LoginPage() {
         </div>
 
         {/* Right Section */}
-        <div className="w-full md:w-1/2 p-8">
-          <h1 className="text-3xl font-semibold text-gray-50 mb-4">
+        <div className="w-full p-4 md:p-8">
+          <h1 className="text-2xl md:text-3xl font-semibold text-gray-50 mb-4">
             Welcome <span className="text-green-500">Back!</span>
           </h1>
           <p className="text-gray-500 mb-8 text-sm">
@@ -115,15 +110,15 @@ export default function LoginPage() {
           <form className="space-y-4" onSubmit={handleSubmit}>
             {/* Email Input */}
             <div>
-              <span className="flex w-full px-4 py-3 rounded-lg gap-2 bg-gray-100 border-gray-50 text-gray-800">
+              <span className="flex w-full px-4 py-3 rounded-lg gap-2 bg-gray-100 text-gray-800">
                 <EnvelopeIcon className="w-5 h-6 text-gray-500" />
                 <input
                   type="email"
                   id="email"
-                  placeholder="you@example.com"
+                  placeholder="you@email.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full bg-gray-100 text-sm"
+                  className="w-full bg-gray-100 text-sm border-none"
                 />
               </span>
             </div>
@@ -159,7 +154,10 @@ export default function LoginPage() {
               </a>
             </div>
 
-            <button type="submit" className="w-full bg-yellow-500 text-white py-3 rounded-lg font-semibold hover:bg-yellow-600 transition">
+            <button
+              type="submit"
+              className="w-full bg-yellow-500 text-white py-3 rounded-lg font-semibold hover:bg-yellow-600 transition"
+            >
               Login
             </button>
           </form>

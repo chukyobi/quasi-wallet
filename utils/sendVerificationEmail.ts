@@ -1,25 +1,19 @@
-import nodemailer from 'nodemailer';
+import sgMail from '@sendgrid/mail';
 
-const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: parseInt(process.env.SMTP_PORT || "587"),
-    secure: false, // Use true for 465, false for other ports
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASSWORD,
-    },
-  });
+// Set the SendGrid API Key
+sgMail.setApiKey(process.env.SENDGRID_API_KEY || '');
+
 /**
- * Sends a verification email using Brevo (Sendinblue).
+ * Sends a verification email using SendGrid.
  * 
  * @param {string} to - The recipient's email address.
  * @param {string} otp - The OTP code to include in the email.
  * @returns {Promise<boolean>} - Returns true if email sent successfully.
  */
 async function sendVerificationEmail(to: string, otp: string): Promise<boolean> {
-    const mailOptions = {
-        from: `YourAppName <noreply@yourdomain.com>`,  // Use your own "From" address
-        to,
+    const msg = {
+        to, // Recipient's email address
+        from: 'no-reply@goldmanprivate.com', // Verified sender email
         subject: 'Account Verification',
         html: `
             <div>
@@ -32,7 +26,7 @@ async function sendVerificationEmail(to: string, otp: string): Promise<boolean> 
     };
 
     try {
-        await transporter.sendMail(mailOptions);
+        await sgMail.send(msg);
         console.log('Verification email sent to:', to);
         return true;
     } catch (error) {

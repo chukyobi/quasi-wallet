@@ -22,7 +22,7 @@ export default function LoginButtons() {
         aria-label="Sign in with Google"
       >
         <Image src={GoogleIcon} alt="Google icon" width={18} height={18} />
-        <span className="text-sm">Sign Up with Google</span>
+        <span className="text-sm">Sign In with Google</span>
       </button>
     </div>
   );

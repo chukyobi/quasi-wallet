@@ -47,8 +47,8 @@ export default function Register() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (password !== confirmPassword) {
-      setError("Passwords do not match.");
+    if (!email || !name || password !== confirmPassword) {
+      setError("Please fill out all fields and ensure passwords match.");
       return;
     }
 
@@ -58,9 +58,10 @@ export default function Register() {
         name,
         password,
       });
-    
+
       if (response.data.success) {
         router.push(`/verify-account?email=${email}`);
+        console.log("Navigation successful!");
       } else {
         setError(response.data.message || "Signup failed. Please try again.");
       }
@@ -78,7 +79,11 @@ export default function Register() {
   };
 
   const validatePassword = (password: string) => {
-    setIsValidPassword(passwordRegex.test(password));
+    if (password.length >= 8) {
+      setIsValidPassword(passwordRegex.test(password));
+    } else {
+      setIsValidPassword(false);
+    }
   };
 
   const validateConfirmPassword = (confirmPassword: string) => {
@@ -105,7 +110,7 @@ export default function Register() {
         {/* Left Section */}
         <div className="w-full md:w-1/2 p-8">
           <h1 className="text-3xl font-semibold text-gray-50 mb-4">
-            Welcome To <span className="text-green-500">Wallet!</span>
+            Welcome To <span className="text-green-500">Goldman!</span>
           </h1>
           <p className="text-gray-500 mb-8 text-sm">
             Start managing your finances faster and better
@@ -163,11 +168,11 @@ export default function Register() {
                     setPassword(e.target.value);
                     validatePassword(e.target.value);
                   }}
-                  className={`bg-gray-100 border-none outline-none text-gray-500 text-sm ${
-                    !isValidPassword && password ? "border-red-500" : ""
-                  }`}
+                  className={`bg-gray-100 border-none outline-none text-gray-500 text-sm ${!isValidPassword && password ? "border-red-500" : ""
+                    }`}
                   required
                 />
+
                 <button
                   type="button"
                   onClick={togglePasswordVisibility}
@@ -183,8 +188,7 @@ export default function Register() {
               </span>
               {!isValidPassword && password && (
                 <p className="text-red-500 text-xs">
-                  Password must be at least 8 characters long and include a
-                  capital letter, number, and special character.
+                  Password must be at least 8 characters long and include a capital letter, number, and special character.
                 </p>
               )}
             </div>
@@ -204,11 +208,10 @@ export default function Register() {
                     setConfirmPassword(e.target.value);
                     validateConfirmPassword(e.target.value);
                   }}
-                  className={`bg-gray-100 border-none outline-none text-gray-500 text-sm ${
-                    !isValidConfirmPassword && confirmPassword
+                  className={`bg-gray-100 border-none outline-none text-gray-500 text-sm ${!isValidConfirmPassword && confirmPassword
                       ? "border-red-500"
                       : ""
-                  }`}
+                    }`}
                   required
                 />
                 <button
@@ -235,7 +238,7 @@ export default function Register() {
               <button
                 type="submit"
                 className="w-full bg-yellow-500 text-white py-3 rounded-lg font-semibold hover:bg-yellow-600 transition"
-                disabled={!isValidPassword || !isValidConfirmPassword}
+                disabled={!isValidPassword || !isValidConfirmPassword || !name || !email}
               >
                 Sign Up
               </button>
@@ -249,6 +252,12 @@ export default function Register() {
           </div>
 
           <LoginButtons />
+          <p className="text-center text-gray-500 mt-6">
+            Already have an account?{" "}
+            <a href="/login" className="text-green-500 font-semibold">
+              Login
+            </a>
+          </p>
         </div>
 
         {/* Right Section - Slider */}
@@ -257,9 +266,8 @@ export default function Register() {
             {slides.map((slide, index) => (
               <div
                 key={index}
-                className={`absolute inset-0 transition-opacity duration-1000 ${
-                  index === currentSlide ? "opacity-100" : "opacity-0"
-                }`}
+                className={`absolute inset-0 transition-opacity duration-1000 ${index === currentSlide ? "opacity-100" : "opacity-0"
+                  }`}
               >
                 <img
                   src={slide.src}
