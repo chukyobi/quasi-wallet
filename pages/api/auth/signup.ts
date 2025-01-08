@@ -9,7 +9,6 @@ export default async function signup(req: NextApiRequest, res: NextApiResponse) 
     return res.status(405).json({ message: "Method not allowed" });
   }
 
-  // Define types for request body (Optional but good practice for TypeScript)
   interface SignupRequestBody {
     email: string;
     name: string;
@@ -21,43 +20,73 @@ export default async function signup(req: NextApiRequest, res: NextApiResponse) 
   try {
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({ where: { email } });
-    if (existingUser) {
-      return res.status(409).json({ message: "User already exists" });
-    }
 
-    // Hash the password
+    if (existingUser) {
+     
+      if (existingUser.isVerified === false) {
+        // User exists but not verified - generate new OTP and update user
+        const otp = crypto.randomInt(10000, 99999).toString();
+        const otpExpires = new Date(Date.now() + 30 * 60 * 1000); // OTP expires in 30 minutes
+
+        await prisma.user.update({
+          where: { email },
+          data: { otp, otpExpires },
+        });
+
+        const emailSent = await sendVerificationEmail(email, otp);
+        if (!emailSent) {
+          return res.status(500).json({ message: "Error sending verification email" });
+        }
+
+        return res.status(200).json({
+          success: true,
+          message: "User found. Verification email resent. Please verify your account.",
+        });
+      }
+      if (existingUser.isVerified == true) {
+
+      // User exists and is verified
+      return res.status(400).json({
+        success: false,
+        message: "User already exists and is verified. Do you want to sign in?",
+      });
+
+      }
+    }
+    
+
+    // User does not exist - create new user
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Generate OTP
     const otp = crypto.randomInt(10000, 99999).toString();
     const otpExpires = new Date(Date.now() + 30 * 60 * 1000); // OTP expires in 30 minutes
 
-    // Create the user in the database
     const newUser = await prisma.user.create({
       data: {
         email,
         name,
         password: hashedPassword,
         isVerified: false,
-        otp,          
-        otpExpires,    
+        otp,
+        otpExpires,
       },
     });
 
-    // Send the verification email
     const emailSent = await sendVerificationEmail(email, otp);
     if (!emailSent) {
-      // Handle failure in sending email
       return res.status(500).json({ message: "Error sending verification email" });
     }
 
-    res.status(201).json({
+    return res.status(201).json({
+      success: true,
       message: "User created successfully. Verification email sent.",
       user: { email: newUser.email, name: newUser.name },
     });
   } catch (error: any) {
-    // Improved error handling
     console.error("Error in signup:", error);
-    return res.status(500).json({ message: "Internal server error" });
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
   }
 }

@@ -42,33 +42,46 @@ export default function Register() {
   const [currentSlide, setCurrentSlide] = useState(0);
 
   const passwordRegex =
-    /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+  /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!email || !name || password !== confirmPassword) {
-      setError("Please fill out all fields and ensure passwords match.");
-      return;
-    }
-
-    try {
-      const response = await axios.post("/api/auth/signup", {
-        email,
-        name,
-        password,
-      });
-
-      if (response.data.success) {
-        router.push(`/verify-account?email=${email}`);
-        console.log("Navigation successful!");
-      } else {
-        setError(response.data.message || "Signup failed. Please try again.");
+    const handleSubmit = async (e: React.FormEvent) => {
+      e.preventDefault();
+    
+      if (!email || !name || password !== confirmPassword) {
+        setError("Please fill out all fields and ensure passwords match.");
+        return;
       }
-    } catch (err: any) {
-      setError(err?.response?.data?.message || "An unexpected error occurred. Please try again.");
-    }
-  };
+    
+      try {
+      
+        const response = await axios.post("/api/auth/signup", {
+          email,
+          name,
+          password,
+        });
+    
+        if (response.data.success) {
+         
+          // If the user exists and verification is not complete, they will be directed to verify their account
+          if (response.data.message.includes("Please verify your account")) {
+
+            router.push(`/verify-account?email=${email}`);
+          } else {
+            // If user is verified, direct them to sign-in page
+            setError("You are already verified. Please sign in.");
+            console.log("User already verified. Prompting to sign in.");
+          }
+        } else {
+          console.log("API returned error:", response.data.message);
+          setError(response.data.message || "Signup failed. Please try again.");
+        }
+      } catch (err: any) {
+        console.error("Error during API call:", err);
+        setError(err?.response?.data?.message || "An unexpected error occurred. Please try again.");
+      }
+    };
+    
+    
 
   const togglePasswordVisibility = () => {
     setShowPassword((prev) => !prev);
@@ -79,7 +92,7 @@ export default function Register() {
   };
 
   const validatePassword = (password: string) => {
-    if (password.length >= 8) {
+    if (password.length >= 8 ) {
       setIsValidPassword(passwordRegex.test(password));
     } else {
       setIsValidPassword(false);
