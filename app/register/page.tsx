@@ -62,15 +62,8 @@ export default function Register() {
     
         if (response.data.success) {
          
-          // If the user exists and verification is not complete, they will be directed to verify their account
-          if (response.data.message.includes("Please verify your account")) {
-
-            router.push(`/verify-account?email=${email}`);
-          } else {
-            // If user is verified, direct them to sign-in page
-            setError("You are already verified. Please sign in.");
-            console.log("User already verified. Prompting to sign in.");
-          }
+     router.push(`/verify-account?email=${email}`);
+         
         } else {
           console.log("API returned error:", response.data.message);
           setError(response.data.message || "Signup failed. Please try again.");
