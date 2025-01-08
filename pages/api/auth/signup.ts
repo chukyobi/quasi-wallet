@@ -48,7 +48,7 @@ export default async function signup(req: NextApiRequest, res: NextApiResponse) 
       // User exists and is verified
       return res.status(400).json({
         success: false,
-        message: "User already exists and is verified. Do you want to sign in?",
+        message: "User already exists. Do you want to sign in?",
       });
 
       }
