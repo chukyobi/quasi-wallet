@@ -47,8 +47,8 @@ export default function Register() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (password !== confirmPassword) {
-      setError("Passwords do not match.");
+    if (!email || !name || password !== confirmPassword) {
+      setError("Please fill out all fields and ensure passwords match.");
       return;
     }
 
@@ -61,6 +61,7 @@ export default function Register() {
 
       if (response.data.success) {
         router.push(`/verify-account?email=${email}`);
+        console.log("Navigation successful!");
       } else {
         setError(response.data.message || "Signup failed. Please try again.");
       }
@@ -84,7 +85,6 @@ export default function Register() {
       setIsValidPassword(false);
     }
   };
-
 
   const validateConfirmPassword = (confirmPassword: string) => {
     setIsValidConfirmPassword(confirmPassword === password);
@@ -188,8 +188,7 @@ export default function Register() {
               </span>
               {!isValidPassword && password && (
                 <p className="text-red-500 text-xs">
-                  Password must be 8 characters long and include a
-                  capital letter, number, and special character.
+                  Password must be at least 8 characters long and include a capital letter, number, and special character.
                 </p>
               )}
             </div>
@@ -239,7 +238,7 @@ export default function Register() {
               <button
                 type="submit"
                 className="w-full bg-yellow-500 text-white py-3 rounded-lg font-semibold hover:bg-yellow-600 transition"
-                disabled={!isValidPassword || !isValidConfirmPassword}
+                disabled={!isValidPassword || !isValidConfirmPassword || !name || !email}
               >
                 Sign Up
               </button>
