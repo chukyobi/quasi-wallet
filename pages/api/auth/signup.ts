@@ -18,13 +18,12 @@ export default async function signup(req: NextApiRequest, res: NextApiResponse) 
   const { email, name, password }: SignupRequestBody = req.body;
 
   try {
-    // Check if user already exists
+    // Check if user already exists and is not verified
     const existingUser = await prisma.user.findUnique({ where: { email } });
 
     if (existingUser) {
-     
-      if (existingUser.isVerified === false) {
-        // User exists but not verified - generate new OTP and update user
+      if (!existingUser.isVerified) {
+        // User exists but is not verified - generate and send new OTP
         const otp = crypto.randomInt(10000, 99999).toString();
         const otpExpires = new Date(Date.now() + 30 * 60 * 1000); // OTP expires in 30 minutes
 
@@ -40,20 +39,16 @@ export default async function signup(req: NextApiRequest, res: NextApiResponse) 
 
         return res.status(200).json({
           success: true,
-          message: "User found. Verification email resent. Please verify your account.",
+          message: "Verification email resent. Please verify your account.",
         });
       }
-      if (existingUser.isVerified == true) {
 
       // User exists and is verified
       return res.status(400).json({
         success: false,
         message: "User already exists. Do you want to sign in?",
       });
-
-      }
     }
-    
 
     // User does not exist - create new user
     const hashedPassword = await bcrypt.hash(password, 10);
