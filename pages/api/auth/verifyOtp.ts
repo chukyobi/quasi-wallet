@@ -1,62 +1,58 @@
-
 import { NextApiRequest, NextApiResponse } from 'next';
-import { parse } from 'cookie';
-import { createUserWithWallet } from '../../../lib/creatUser'; 
-
-interface UserData {
-  email: string;
-  name: string;
-  hashedPassword: string;
-  otpExpires: Date;
-  otp: string;
-}
+import prisma from '@/lib/prisma'; 
 
 export default async function verifyOtp(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ message: 'Method not allowed' });
   }
 
-  const { otp } = req.body;
+  const { otp, email } = req.body;
 
-  if (!otp) {
-    return res.status(400).json({ message: 'OTP is required' });
+  if (!otp || !email) {
+    return res.status(400).json({ message: 'OTP and email are required' });
   }
 
   try {
-    // Parse cookie data
-    const cookies = parse(req.headers.cookie || '');
-    const userData: UserData | null = cookies.userData ? JSON.parse(cookies.userData) : null;
+    // Retrieve the user from the database using email
+    const user = await prisma.user.findUnique({
+      where: { email },
+    });
 
-    if (!userData) {
-      return res.status(400).json({ message: 'Invalid or missing user data' });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
     }
 
-    const { email, name, hashedPassword, otp: storedOtp, otpExpires } = userData;
-
-    // Validate OTP
-    if (otp.trim() !== storedOtp) {
+    // Check if the OTP matches
+    if (otp.trim() !== user.otp) {
       return res.status(400).json({ message: 'Invalid OTP' });
     }
 
-    if (new Date() > otpExpires) {
+    // Check if the OTP has expired, ensuring otpExpires is not null
+    if (user.otpExpires && new Date() > user.otpExpires) {
       return res.status(400).json({ message: 'OTP has expired' });
     }
 
-    // Create user and wallet using the createUserWithWallet function
-    await createUserWithWallet({
-      email,
-      name,
-      hashedPassword,
+    // Update the user as verified (set isVerified to true)
+    await prisma.user.update({
+      where: { email },
+      data: {
+        isVerified: true, 
+        otp: null, 
+        otpExpires: null, 
+      },
     });
 
-    // User and wallet are created, NextAuth will automatically handle the session.
-    // Return a success response with a redirect URL.
+    // Return success response
     return res.status(200).json({
-      message: 'User verified and created successfully',
-      redirectUrl: '/dashboard', // Provide a URL to redirect after success
+      success:true,
+      message: 'User verified successfully',
+      
     });
   } catch (error) {
-    console.error('Error verifying OTP or creating user:', error);
-    return res.status(500).json({ message: 'Something went wrong' });
+    console.error('Error verifying OTP:', error);
+    return res.status(500).json({ 
+      success: false,
+      message: 'Something went wrong' 
+    });
   }
 }

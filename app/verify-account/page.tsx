@@ -1,36 +1,24 @@
 "use client";
-import { useState, useEffect } from "react";
+
+import { useState, useEffect, ChangeEvent, FormEvent } from "react";
 import axios from "axios";
 import { useRouter, useSearchParams } from "next/navigation";
 
 export default function Verify() {
   const router = useRouter();
-  const searchParams = useSearchParams();  // Use the searchParams hook to get query parameters
-  const email = searchParams?.get("email");  // Get the email from the query string
-  
-  const [otp, setOtp] = useState(Array(5).fill(""));
+  const searchParams = useSearchParams();
+  const email = searchParams?.get("email");
+
+  const [otp, setOtp] = useState("");
   const [error, setError] = useState("");
-  const [timer, setTimer] = useState(0);
+  const [timer, setTimer] = useState(300); // 5 minutes in seconds
   const [codeExpired, setCodeExpired] = useState(false);
 
-  // Initialize or retrieve the countdown timer
   useEffect(() => {
-    const endTime = localStorage.getItem("otpEndTime");
-
-    if (endTime) {
-      const remainingTime = Math.floor((new Date(endTime).getTime() - Date.now()) / 1000);
-      setTimer(Math.max(remainingTime, 0));
-      setCodeExpired(remainingTime <= 0);
-    } else {
-      const newEndTime = new Date(Date.now() + 30 * 60 * 1000);
-      localStorage.setItem("otpEndTime", newEndTime.toString());
-      setTimer(30 * 60);
-    }
-
-    const countdown = setInterval(() => {
+    const interval = setInterval(() => {
       setTimer((prev) => {
         if (prev <= 1) {
-          clearInterval(countdown);
+          clearInterval(interval);
           setCodeExpired(true);
           return 0;
         }
@@ -38,52 +26,45 @@ export default function Verify() {
       });
     }, 1000);
 
-    return () => clearInterval(countdown);
+    return () => clearInterval(interval);
   }, []);
 
   const handleResendCode = async () => {
     setError("");
+    if (!email) {
+      setError("Email is missing.");
+      return;
+    }
+
     try {
-      if (!email) {
-        setError("Email is missing.");
-        return;
-      }
       await axios.post("/api/auth/resendOtp", { email });
-      const newEndTime = new Date(Date.now() + 15 * 60 * 1000);
-      localStorage.setItem("otpEndTime", newEndTime.toString());
-      setTimer(15 * 60);
+      setTimer(300); // Reset timer to 5 minutes
       setCodeExpired(false);
     } catch (err) {
       setError("Failed to resend OTP. Please try again.");
     }
   };
 
-  const handleOtpChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
-    const value = e.target.value.slice(-1);
-    setOtp((prev) => {
-      const newOtp = [...prev];
-      newOtp[index] = value;
-      return newOtp;
-    });
+  const handleOtpChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setOtp(value.slice(0, 5)); // Limit input to 5 characters
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     try {
-      const otpString = otp.join("");
-      const response = await axios.post("/api/auth/verifyOtp", { otp: otpString, email });
+      const response = await axios.post("/api/auth/verifyOtp", { otp, email });
       if (response.status === 200) {
-        localStorage.removeItem("otpEndTime");
         router.push("/login");
       }
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Verification failed. Please try again.");
+    } catch (err) {
+      setError("Verification failed. Please try again.");
     }
   };
 
   const formatTimer = () => {
-    const minutes = Math.floor(timer / 60).toString().padStart(2, '0');
-    const seconds = (timer % 60).toString().padStart(2, '0');
+    const minutes = Math.floor(timer / 60).toString().padStart(2, "0");
+    const seconds = (timer % 60).toString().padStart(2, "0");
     return `${minutes}:${seconds}`;
   };
 
@@ -96,18 +77,16 @@ export default function Verify() {
         </p>
 
         <form onSubmit={handleSubmit}>
-          <div className="flex space-x-2 mb-4">
-            {otp.map((_, index) => (
-              <input
-                key={index}
-                type="text"
-                maxLength={1}
-                value={otp[index]}
-                onChange={(e) => handleOtpChange(e, index)}
-                className="w-12 h-12 border border-gray-300 rounded text-center text-xl font-semibold"
-                required
-              />
-            ))}
+          <div className="mb-4">
+            <input
+              type="text"
+              maxLength={5}
+              value={otp}
+              onChange={handleOtpChange}
+              className="w-full h-12 border border-gray-300 rounded text-center text-xl font-semibold"
+              placeholder="Enter OTP"
+              required
+            />
           </div>
 
           {error && <p className="text-red-500 mb-4">{error}</p>}
