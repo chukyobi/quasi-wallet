@@ -198,6 +198,9 @@ export default function HomePage() {
   // State to control modal visibility
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isWaitlistModalOpen, setIsWaitlistModalOpen] = useState(false);
+  const [email, setEmail] = useState("");
+  const [message, setMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   // Function to open modal
   const openModal = () => {
@@ -209,19 +212,43 @@ export default function HomePage() {
     setIsModalOpen(false);
   };
 
-    // Function to handle modal open
-    const handleOpenModal = () => {
-      setIsWaitlistModalOpen(true);
-    };
-  
-    // Function to handle modal close
-    const handleCloseModal = () => {
-      setIsWaitlistModalOpen(false);
-    };
+  // Function to handle modal open
+  const handleOpenModal = () => {
+    setIsWaitlistModalOpen(true);
+  };
 
-    const handleSubmit = () => {
-      
-    };
+  // Function to handle modal close
+  const handleCloseModal = () => {
+    setIsWaitlistModalOpen(false);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    setIsLoading(true);
+
+    try {
+      const response = await fetch("/api/join-waitlist", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setMessage(data.message); // Success message
+      } else {
+        setMessage(data.message); // Error message
+      }
+    } catch (error) {
+      setMessage("An unexpected error occurred. Please try again later.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
   return (
     <>
       <Navigation />
@@ -858,27 +885,32 @@ export default function HomePage() {
                   <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center z-50">
                     <div className="bg-white p-8 rounded-lg shadow-lg max-w-sm w-full">
                       <h2 className="text-2xl font-semibold mb-4">Join the Waitlist</h2>
-                      <input
-                        type="email"
-                        placeholder="Enter your email"
-                        
-                     
-                        className="border p-2 w-full rounded-md mb-4"
-                      />
-                      <div className="flex justify-end space-x-4">
-                        <button
-                          onClick={handleCloseModal}
-                          className="bg-gray-300 hover:bg-gray-400 text-black px-4 py-2 rounded-md"
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          onClick={handleSubmit}
-                          className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-md"
-                        >
-                          Send
-                        </button>
-                      </div>
+                      <form onSubmit={handleSubmit}>
+                        <label htmlFor="email">Email:</label>
+                        <input
+                          type="email"
+                          id="email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          required
+                          placeholder="Enter your email"
+                        />
+                        <div className="flex justify-end space-x-4">
+                          <button
+                            onClick={handleCloseModal}
+                            className="bg-gray-300 hover:bg-gray-400 text-black px-4 py-2 rounded-md"
+                          >
+                            Cancel
+                          </button>
+                          <button type="submit" disabled={isLoading}>
+                            {isLoading ? "Sending..." : "Send"}
+                          </button>
+                        </div>
+
+                      </form>
+                      {message && <p>{message}</p>}
+
+
                     </div>
                   </div>
                 )}
