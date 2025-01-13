@@ -197,6 +197,7 @@ export default function HomePage() {
 
   // State to control modal visibility
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isWaitlistModalOpen, setIsWaitlistModalOpen] = useState(false);
 
   // Function to open modal
   const openModal = () => {
@@ -207,6 +208,20 @@ export default function HomePage() {
   const closeModal = () => {
     setIsModalOpen(false);
   };
+
+    // Function to handle modal open
+    const handleOpenModal = () => {
+      setIsWaitlistModalOpen(true);
+    };
+  
+    // Function to handle modal close
+    const handleCloseModal = () => {
+      setIsWaitlistModalOpen(false);
+    };
+
+    const handleSubmit = () => {
+      
+    };
   return (
     <>
       <Navigation />
@@ -775,7 +790,7 @@ export default function HomePage() {
               <iframe
                 width="560"
                 height="315"
-                src="https://youtu.be/4rwgfV0k7xA?si=wtG3vk772eZbdoSY"
+                src="https://www.youtube.com/embed/4rwgfV0k7xA?si=wtG3vk772eZbdoSY"
                 title="YouTube video player"
                 frameBorder="0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -783,6 +798,7 @@ export default function HomePage() {
                 className="rounded-lg shadow-xl"
               />
             </div>
+
           </div>
 
           {/* Right Content - FAQs */}
@@ -829,9 +845,43 @@ export default function HomePage() {
                 the first to access our platform when it launches.
               </p>
               <div className="flex justify-center lg:justify-start gap-4">
-                <button className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-md text-lg">
+                {/* Button that opens the modal */}
+                <button
+                  onClick={handleOpenModal}
+                  className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-md text-lg"
+                >
                   Join the Waitlist
                 </button>
+
+                {/* Modal */}
+                {isWaitlistModalOpen && (
+                  <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center z-50">
+                    <div className="bg-white p-8 rounded-lg shadow-lg max-w-sm w-full">
+                      <h2 className="text-2xl font-semibold mb-4">Join the Waitlist</h2>
+                      <input
+                        type="email"
+                        placeholder="Enter your email"
+                        
+                     
+                        className="border p-2 w-full rounded-md mb-4"
+                      />
+                      <div className="flex justify-end space-x-4">
+                        <button
+                          onClick={handleCloseModal}
+                          className="bg-gray-300 hover:bg-gray-400 text-black px-4 py-2 rounded-md"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          onClick={handleSubmit}
+                          className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-md"
+                        >
+                          Send
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -950,7 +1000,7 @@ export default function HomePage() {
         </section>
 
         {/* Footer */}
-       <Footer />
+        <Footer />
       </div>
     </>
   );

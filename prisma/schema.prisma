@@ -60,3 +60,10 @@ model Transaction {
   transactionDate DateTime  @default(now())
   user            User      @relation(fields: [userEmail], references: [email]) // Link to User by email
 }
+
+model EmailList {
+  id        Int      @id @default(autoincrement())  // Unique identifier for each email entry
+  email     String   @unique  // Ensure each email is unique
+  createdAt DateTime @default(now())  // Timestamp when the email was added
+  status    String   @default("pending")  // You can set the status to 'pending', 'verified', etc.
+}
