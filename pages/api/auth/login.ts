@@ -1,7 +1,9 @@
+// pages/api/login.ts
 import { NextApiRequest, NextApiResponse } from "next";
 import bcrypt from "bcryptjs";
 import prisma from "@/lib/prisma";
-import jwt from "jsonwebtoken";
+import { signIn } from "next-auth/react";
+import { generateAndSendOtp } from "@/utils/generateAndSendOtp";
 
 export default async function login(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") {
@@ -16,7 +18,7 @@ export default async function login(req: NextApiRequest, res: NextApiResponse) {
   const { email, password }: LoginRequestBody = req.body;
 
   try {
-    // Find user by email
+    // Find the user by email
     const user = await prisma.user.findUnique({ where: { email } });
 
     if (!user) {
@@ -26,11 +28,13 @@ export default async function login(req: NextApiRequest, res: NextApiResponse) {
       });
     }
 
-    // Check if the user's email is verified
+    // Check if the user is unverified
     if (!user.isVerified) {
+      await generateAndSendOtp(email); // Trigger OTP resend logic
       return res.status(400).json({
         success: false,
-        message: "Please verify your email address first.",
+        message: "Your email is not verified. A new OTP has been sent to your email.",
+        actionRequired: "verifyEmail",
       });
     }
 
@@ -38,7 +42,7 @@ export default async function login(req: NextApiRequest, res: NextApiResponse) {
     if (!user.password) {
       return res.status(500).json({
         success: false,
-        message: "Internal server error: Password is missing for this user.",
+        message: "Password is missing for this user.",
       });
     }
 
@@ -52,17 +56,24 @@ export default async function login(req: NextApiRequest, res: NextApiResponse) {
       });
     }
 
-    // Generate JWT token
-    const token = jwt.sign(
-      { userId: user.id, email: user.email },
-      process.env.JWT_SECRET as string,
-      // { expiresIn: "1h" }
-    );
+    // Use NextAuth's signIn to create a session
+    const result = await signIn("credentials", {
+      email: user.email,
+      password, // Include the password for signIn
+      redirect: false, // Prevent automatic redirection
+    });
 
+    if (result?.error) {
+      return res.status(401).json({
+        success: false,
+        message: result.error,
+      });
+    }
+
+    // Login successful, return user details
     return res.status(200).json({
       success: true,
       message: "Login successful",
-      token,
       user: { email: user.email, name: user.name },
     });
   } catch (error: any) {

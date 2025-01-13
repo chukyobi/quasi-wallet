@@ -12,14 +12,17 @@ const Preloader: React.FC = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: 'rgba(255, 255, 255, 0.8)', // Transparent background
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
         zIndex: 9999,
-        overflow: 'hidden', // Ensure no scrollbars
+        overflow: 'hidden',
       }}
     >
       <div style={styles.loaderWrapper}>
-        <div style={styles.spinner}></div>
-        <p style={styles.loadingText}>Loading...</p>
+        <img
+          src="/assets/goldman.png"  
+          alt="Goldman Preloader"
+          style={styles.logo}
+        />
       </div>
     </div>
   );
@@ -27,22 +30,13 @@ const Preloader: React.FC = () => {
 
 const styles = {
   loaderWrapper: {
-    textAlign: 'center' as 'center', // Explicitly casting to 'center'
+    textAlign: 'center' as 'center', 
     fontFamily: 'Arial, sans-serif' as string,
   },
-  spinner: {
-    width: '50px',
-    height: '50px',
-    border: '5px solid #f3f3f3',
-    borderTop: '5px solid #3498db',
-    borderRadius: '50%',
-    animation: 'spin 1s linear infinite',
-    marginBottom: '20px',
-  },
-  loadingText: {
-    fontSize: '20px',
-    color: '#333',
-    fontWeight: 'bold',
+  logo: {
+    width: '100px', 
+    height: '100px', 
+    animation: 'zoomInOut 2s ease-in-out infinite', 
   },
 };
 
