@@ -21,7 +21,7 @@ async function sendContactEmail(from: string, name: string, to: string, message:
                 <h2>New Contact Message</h2>
                 <p><strong>Name:</strong> ${name}</p> <!-- Display sender's name -->
                 <p><strong>Email:</strong> ${from}</p> <!-- Display sender's email -->
-                <p><strong>Message:</strong> ${message}</p> <!-- Display the message -->
+                <p><strong>Message:</strong> ${message}</p> <!-- Display the messages -->
             </div>
         `,
     };
