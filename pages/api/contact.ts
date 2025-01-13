@@ -15,7 +15,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const isSent = await sendContactEmail(email, name, "contact@goldmanprivate.com", message);
 
       if (isSent) {
-        return res.status(200).json({ message: "Your message has been sent successfully!" });
+        return res.status(200).json({ message: "Your messages has been sent successfully!" });
       }
 
       return res.status(500).json({ message: "Failed to send message." });
