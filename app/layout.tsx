@@ -1,11 +1,11 @@
-"use client";  // Mark as Client Component
+"use client"; 
 
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import localFont from "next/font/local";
 import "./globals.css";
 import { SessionProvider } from "next-auth/react";
-import Preloader from "../components/Preloader"; // Import the Preloader component
+import Preloader from "../components/Preloader"; 
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -31,11 +31,11 @@ export default function RootLayout({
     const startLoading = () => setLoading(true);
     const stopLoading = () => setLoading(false);
 
-    startLoading(); // Show preloader on first load
-    setTimeout(stopLoading, 1000); // Add delay to ensure preloader visibility
+    startLoading(); 
+    setTimeout(stopLoading, 2000); 
 
     return () => stopLoading();
-  }, [pathname]); // Run this effect when pathname changes
+  }, [pathname]); 
 
   return (
     <html lang="en">

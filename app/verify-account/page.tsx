@@ -11,7 +11,7 @@ export default function Verify() {
 
   const [otp, setOtp] = useState("");
   const [error, setError] = useState("");
-  const [timer, setTimer] = useState(300); // 5 minutes in seconds
+  const [timer, setTimer] = useState(300); 
   const [codeExpired, setCodeExpired] = useState(false);
 
   useEffect(() => {
@@ -38,7 +38,7 @@ export default function Verify() {
 
     try {
       await axios.post("/api/auth/resendOtp", { email });
-      setTimer(300); // Reset timer to 5 minutes
+      setTimer(300); 
       setCodeExpired(false);
     } catch (err) {
       setError("Failed to resend OTP. Please try again.");
@@ -47,7 +47,7 @@ export default function Verify() {
 
   const handleOtpChange = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    setOtp(value.slice(0, 5)); // Limit input to 5 characters
+    setOtp(value.slice(0, 5)); 
   };
 
   const handleSubmit = async (e: FormEvent) => {

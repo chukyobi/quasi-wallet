@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import bcrypt from "bcryptjs";
-import prisma from "../../../lib/prisma";
-import sendVerificationEmail from "../../../utils/sendVerificationEmail";
+import prisma from "@/lib/prisma";
+import sendVerificationEmail from "@/utils/sendVerificationEmail";
 import crypto from "crypto";
 import React from "react";
 
@@ -19,14 +19,12 @@ export default async function signup(req: NextApiRequest, res: NextApiResponse) 
   const { email, name, password }: SignupRequestBody = req.body;
 
   try {
-    // Check if user already exists and is not verified
     const existingUser = await prisma.user.findUnique({ where: { email } });
 
     if (existingUser) {
       if (!existingUser.isVerified) {
-        // User exists but is not verified - generate and send new OTP
         const otp = crypto.randomInt(10000, 99999).toString();
-        const otpExpires = new Date(Date.now() + 30 * 60 * 1000); // OTP expires in 30 minutes
+        const otpExpires = new Date(Date.now() + 15 * 60 * 1000);
 
         await prisma.user.update({
           where: { email },
@@ -44,25 +42,21 @@ export default async function signup(req: NextApiRequest, res: NextApiResponse) 
         });
       }
 
-      // User exists and is verified
       return res.status(400).json({
         success: false,
         message: "User already exists. Do you want to sign in?",
       });
     }
 
-    // User does not exist - create new user
     const hashedPassword = await bcrypt.hash(password, 10);
-
     const otp = crypto.randomInt(10000, 99999).toString();
-    const otpExpires = new Date(Date.now() + 30 * 60 * 1000); // OTP expires in 30 minutes
+    const otpExpires = new Date(Date.now() + 15 * 60 * 1000);
 
-    const newUser = await prisma.user.create({
+    await prisma.user.create({
       data: {
         email,
         name,
         password: hashedPassword,
-        isVerified: false,
         otp,
         otpExpires,
       },
@@ -76,7 +70,6 @@ export default async function signup(req: NextApiRequest, res: NextApiResponse) 
     return res.status(201).json({
       success: true,
       message: "User created successfully. Verification email sent.",
-      user: { email: newUser.email, name: newUser.name },
     });
   } catch (error: any) {
     console.error("Error in signup:", error);

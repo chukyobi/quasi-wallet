@@ -4,10 +4,10 @@ import { Button } from "@/components/ui/button";
 import { FileText, Plane, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { motion, useAnimation } from "framer-motion";
-import { useEffect } from "react";
+import { useState } from "react";
 import { useInView } from "react-intersection-observer";
 import { ArrowRightIcon, LockClosedIcon } from "@heroicons/react/24/solid";
-import Navigation from "../components/Navigation";
+import Navigation from "@/components/Navigation";
 import { Quicksand, Oxygen } from "next/font/google";
 import { Card, CardContent } from "@/components/ui/card";
 import { Star, Save, CheckCircle, ChevronRight } from "lucide-react";
@@ -25,7 +25,8 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Input } from "@/components/ui/input";
-import { Facebook, Twitter, Linkedin, Search } from "lucide-react";
+
+import Footer from "@/components/Footer";
 
 const oxygen = Oxygen({
   subsets: ["latin"],
@@ -134,7 +135,7 @@ export default function HomePage() {
   ];
 
   const { ref, inView } = useInView({
-    threshold: 0.2, // Triggers when 20% of the section is visible
+    threshold: 0.2,
   });
 
   // Animation for section reveal (fade out when out of view)
@@ -193,6 +194,34 @@ export default function HomePage() {
     hidden: { opacity: 0, x: -100 },
     visible: { opacity: 1, x: 0, transition: { duration: 1 } },
   };
+
+  // State to control modal visibility
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isWaitlistModalOpen, setIsWaitlistModalOpen] = useState(false);
+
+  // Function to open modal
+  const openModal = () => {
+    setIsModalOpen(true);
+  };
+
+  // Function to close modal
+  const closeModal = () => {
+    setIsModalOpen(false);
+  };
+
+    // Function to handle modal open
+    const handleOpenModal = () => {
+      setIsWaitlistModalOpen(true);
+    };
+  
+    // Function to handle modal close
+    const handleCloseModal = () => {
+      setIsWaitlistModalOpen(false);
+    };
+
+    const handleSubmit = () => {
+      
+    };
   return (
     <>
       <Navigation />
@@ -212,7 +241,7 @@ export default function HomePage() {
               A Next-General <br />
               <span className="relative">
                 Quantum Ledger for Secure Assets
-                <span className="absolute inset-0 bottom-20 top-4 -z-10 w-40 sm:w-80 bg-yellow-400 blur-xs px-2 py-1"></span>
+                <span className="absolute inset-0 bottom-20 top-4 -z-10 w-40 sm:w-80 bg-green-400 blur-xs px-2 py-1"></span>
               </span>
             </h1>
             <p className="text-gray-300 text-sm sm:text-base lg:text-lg mb-8">
@@ -221,7 +250,7 @@ export default function HomePage() {
             </p>
 
             <div className="flex justify-center lg:justify-start space-x-4">
-              <button className="bg-yellow-400 text-black px-4 sm:px-6 py-2 rounded-lg font-semibold text-xs sm:text-sm hover:bg-yellow-500 transition-all duration-300">
+              <button className="bg-green-400 text-black px-4 sm:px-6 py-2 rounded-lg font-semibold text-xs sm:text-sm hover:bg-yellow-500 transition-all duration-300">
                 <Link
 
                   href="/login"
@@ -229,10 +258,50 @@ export default function HomePage() {
                   Get Started
                 </Link>
               </button>
-              <button className="bg-gray-800 flex items-center gap-1 text-white px-4 sm:px-6 py-2 rounded-lg font-bold text-xs sm:text-sm hover:bg-gray-700 transition-all duration-300">
-                See How it Works{" "}
-                <ArrowRightIcon className="w-4 sm:w-5 h-4 sm:h-5" />
-              </button>
+              <div>
+                {/* Button */}
+                <button
+                  onClick={openModal}
+                  className="bg-gray-800 flex items-center gap-1 text-white px-4 sm:px-6 py-2 rounded-lg font-bold text-xs sm:text-sm hover:bg-gray-700 transition-all duration-300"
+                >
+                  See How it Works
+                  <ArrowRightIcon className="w-4 sm:w-5 h-4 sm:h-5" />
+                </button>
+
+                {/* Modal */}
+                {isModalOpen && (
+                  <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+                    <div className="bg-white rounded-lg p-6 w-3/4 sm:w-1/2 max-w-xl">
+                      <h2 className="text-xl font-bold mb-4">How the Next-Gen Quantum Backup Ledger Works</h2>
+                      <div className="mb-4">
+                        {/* Diagram */}
+                        <img
+                          src="/assets/quantum.png"
+                          alt="Quantum Backup Ledger Diagram"
+                          className="w-full h-auto mb-4"
+                        />
+                        {/* Write-up */}
+                        <p className="text-sm text-gray-700">
+                          The next-gen quantum backup ledger uses advanced encryption techniques leveraging quantum
+                          computing principles to secure your wallets and transactions. This ensures your assets are protected
+                          against even the most sophisticated attacks, including quantum attacks. The quantum ledger backup system
+                          is designed to automatically sync and encrypt wallet data across multiple devices, providing a seamless
+                          and secure user experience.
+                        </p>
+                      </div>
+                      {/* Close Button */}
+                      <div className="flex justify-end mt-4">
+                        <button
+                          onClick={closeModal}
+                          className="bg-red-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-600"
+                        >
+                          Close
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </motion.div>
@@ -334,7 +403,7 @@ export default function HomePage() {
                     duration: 0.2,
                     ease: "easeOut",
                   }}
-                  className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-4 rounded-lg text-lg"
+                  className="bg-green-400 hover:bg-emerald-500 text-white px-8 py-4 rounded-lg text-lg"
                   onClick={() => (window.location.href = "/login")}
                 >
                   Get Started
@@ -630,7 +699,7 @@ export default function HomePage() {
         ))}
 
         <div className="container mx-auto px-4">
-          <h2 className="text-4xl md:text-5xl font-bold text-center text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-yellow-600 to-yellow-500 mb-16">
+          <h2 className="text-4xl md:text-5xl font-bold text-center text-transparent bg-clip-text bg-gradient-to-r from-gren-300 via-green-600 to-green-500 mb-16">
             What our customers
             <br />
             say about us
@@ -680,8 +749,8 @@ export default function HomePage() {
                           <Star
                             key={i}
                             className={`h-5 w-5 ${i < testimonial.rating
-                                ? "fill-yellow-400 text-yellow-400"
-                                : "text-gray-200"
+                              ? "fill-green-400 text-green-400"
+                              : "text-gray-200"
                               }`}
                           />
                         ))}
@@ -698,11 +767,11 @@ export default function HomePage() {
         </div>
       </div>
 
-      <div className="max-w-6xl flex flex-col mx-auto px-4 py-16">
+      <div id="faq" className="max-w-6xl flex flex-col mx-auto px-4 py-16">
         <div className="grid lg:grid-cols-2 gap-12">
           {/* Left Content */}
           <div className="space-y-6">
-            <Badge className="bg-gray-100 text-yellow-500 hover:bg-gray-100 px-3 py-1 rounded-full">
+            <Badge className="bg-gray-100 text-green-500 hover:bg-gray-100 px-3 py-1 rounded-full">
               FAQ&apos;s
             </Badge>
 
@@ -711,11 +780,25 @@ export default function HomePage() {
             </h1>
 
             <p className=" flex items-center gap-2 text-gray-200">
-              <CheckCircle className="h-5 w-5 text-yellow-500" />
+              <CheckCircle className="h-5 w-5 text-green-500" />
               Here, we've compiled answers to some common questions about our
               crypto wallet backup service and how our digital quantum ledger
               ensures the highest level of security for your assets.
             </p>
+
+            <div className="flex justify-center">
+              <iframe
+                width="560"
+                height="315"
+                src="https://www.youtube.com/embed/4rwgfV0k7xA?si=wtG3vk772eZbdoSY"
+                title="YouTube video player"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                className="rounded-lg shadow-xl"
+              />
+            </div>
+
           </div>
 
           {/* Right Content - FAQs */}
@@ -752,7 +835,7 @@ export default function HomePage() {
             {/* Text Content */}
             <div className="space-y-6 text-center lg:text-left">
               <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 leading-tight">
-                Trade with <span className="text-yellow-500">GoldmanX</span>
+                Trade with <span className="text-green-500">GoldmanX</span>
                 <span className="text-green-400">.</span>
               </h1>
               <p className="text-lg text-gray-600">
@@ -762,9 +845,43 @@ export default function HomePage() {
                 the first to access our platform when it launches.
               </p>
               <div className="flex justify-center lg:justify-start gap-4">
-                <button className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-md text-lg">
+                {/* Button that opens the modal */}
+                <button
+                  onClick={handleOpenModal}
+                  className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-md text-lg"
+                >
                   Join the Waitlist
                 </button>
+
+                {/* Modal */}
+                {isWaitlistModalOpen && (
+                  <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center z-50">
+                    <div className="bg-white p-8 rounded-lg shadow-lg max-w-sm w-full">
+                      <h2 className="text-2xl font-semibold mb-4">Join the Waitlist</h2>
+                      <input
+                        type="email"
+                        placeholder="Enter your email"
+                        
+                     
+                        className="border p-2 w-full rounded-md mb-4"
+                      />
+                      <div className="flex justify-end space-x-4">
+                        <button
+                          onClick={handleCloseModal}
+                          className="bg-gray-300 hover:bg-gray-400 text-black px-4 py-2 rounded-md"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          onClick={handleSubmit}
+                          className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-md"
+                        >
+                          Send
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -883,99 +1000,7 @@ export default function HomePage() {
         </section>
 
         {/* Footer */}
-        <footer className="bg-gray-900 text-gray-400 py-16">
-          <div className="container mx-auto px-4">
-            <div className="grid md:grid-cols-5 gap-8 mb-12">
-              <div className="md:col-span-2">
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="w-8 h-8 bg-yellow-500 rounded-full"></div>
-                  <span className="text-white text-xl font-bold">
-                    GOLDMAN PRIVATE
-                  </span>
-                </div>
-                <p className="mb-6">
-                  Secure your digital assets with our advanced backup wallets
-                  and quantum ledger platform. We're here to ensure your assets
-                  are safely stored and protected with cutting-edge technology.
-                </p>
-                <div className="flex gap-4">
-                  <a href="#" className="hover:text-white">
-                    <Facebook size={24} /> {/* Facebook Icon */}
-                  </a>
-                  <a href="#" className="hover:text-white">
-                    <Twitter size={24} /> {/* Twitter Icon */}
-                  </a>
-                  <a href="#" className="hover:text-white">
-                    <Linkedin size={24} /> {/* Linkedin Icon */}
-                  </a>
-                </div>
-              </div>
-
-              <div>
-                <h3 className="text-white font-semibold mb-4">Solutions</h3>
-                <ul className="space-y-3">
-                  <li>
-                    <a href="#" className="hover:text-white">
-                      GoldmanChest
-                    </a>
-                  </li>
-                  <li>
-                    <a href="#" className="hover:text-white">
-                      GoldmanX
-                    </a>
-                  </li>
-                </ul>
-              </div>
-
-              <div>
-                <h3 className="text-white font-semibold mb-4">Benefits</h3>
-                <ul className="space-y-3">
-                  <li>
-                    <a href="#" className="hover:text-white">
-                      Use Cases
-                    </a>
-                  </li>
-                  <li>
-                    <a href="#" className="hover:text-white">
-                      Regultory Board
-                    </a>
-                  </li>
-                  <li>
-                    <a href="#" className="hover:text-white">
-                      Whitepaper
-                    </a>
-                  </li>
-                </ul>
-              </div>
-
-              <div>
-                <h3 className="text-white font-semibold mb-4">Contacts</h3>
-                <ul className="space-y-3">
-                  <li>mail@example.com</li>
-                  <li>(480) 555-0103</li>
-                  <li>United Kingdom, Great Britain</li>
-                </ul>
-              </div>
-            </div>
-
-            <div className="flex flex-col md:flex-row justify-between items-center pt-8 border-t border-gray-800">
-              <p>
-                © All rights reserved by Goldman Private{" "}
-                {new Date().getFullYear()}
-              </p>
-
-              <div className="flex gap-4">
-                <a href="#" className="hover:text-white">
-                  Cookie Policy
-                </a>
-                <span>|</span>
-                <a href="#" className="hover:text-white">
-                  Terms and conditions
-                </a>
-              </div>
-            </div>
-          </div>
-        </footer>
+        <Footer />
       </div>
     </>
   );
