@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import prisma from "@/lib/prisma";
 import sendVerificationEmail from "@/utils/sendVerificationEmail";
 import crypto from "crypto";
+import React from "react";
 
 export default async function signup(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") {
