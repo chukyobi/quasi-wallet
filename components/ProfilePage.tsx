@@ -1,10 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { PencilIcon } from 'lucide-react';
+import { PencilIcon, WalletIcon, HistoryIcon, UserIcon } from "lucide-react";
 import Image from "next/image";
 
 interface Wallet {
@@ -48,7 +47,7 @@ const ProfilePage = ({ userEmail }: { userEmail: string }) => {
   useEffect(() => {
     const fetchProfileData = async () => {
       try {
-        const res = await fetch(`/api/user/${userEmail}`); // Fix: Use backticks for string interpolation
+        const res = await fetch(`/api/user/${userEmail}`);
         const data = await res.json();
 
         if (!res.ok) throw new Error("Failed to fetch user data");
@@ -73,148 +72,109 @@ const ProfilePage = ({ userEmail }: { userEmail: string }) => {
   }
 
   return (
-    <div className="flex">
-      <Tabs defaultValue="account" className="w-full bg-zinc-900 p-8 rounded-2xl flex">
-        {/* Left-aligned tab list */}
-        <TabsList className="flex flex-col bg-zinc-900 items-start w-1/4 p-0 mr-4 h-full">
-          <TabsTrigger
-            value="account"
-            className="text-sm data-[state=active]:border-l-4 data-[state=active]:border-yellow-400 rounded-none pb-2 w-full text-left pl-4 py-2"
-          >
-            Account details
-          </TabsTrigger>
-
-          <TabsTrigger
-            value="premium"
-            className="text-sm data-[state=active]:border-l-4 data-[state=active]:border-yellow-400 rounded-none pb-2 w-full text-left pl-4 py-2"
-          >
-            Premium account
-          </TabsTrigger>
-        </TabsList>
-
-        {/* Vertical divider */}
-        <div className="border-r border-zinc-700"></div>
-
-        {/* Right-aligned content */}
-        <div className="flex-grow">
-          <TabsContent value="account">
-            <div className="space-y-8">
-              <div className="flex items-center justify-between rounded-2xl p-6 border border-zinc-700">
-                <div className="flex items-center gap-4">
-                  {profileData.name ? (
-                    <div
-                      className="flex items-center justify-center bg-blue-500 text-white font-semibold text-2xl rounded-full"
-                      style={{ width: 80, height: 80 }}
-                    >
-                      {profileData.name
-                        .split(" ") // Split the name into words
-                        .map(word => word[0]) // Get the first letter of each word
-                        .join("") // Combine them into a single string
-                        .toUpperCase()} {/* Convert to uppercase */}
-                    </div>
-                  ) : (
-                    <Image
-                      src="/placeholder.svg"
-                      alt="Placeholder"
-                      width={80}
-                      height={80}
-                      className="rounded-full"
-                    />
-                  )}
-                  <div>
-                    <h2 className="text-xl font-semibold">{profileData.name}</h2>
-                    <p className="text-gray-500">{profileData.email}</p>
-                  </div>
-                </div>
-
-
-              </div>
-
-              <div className="rounded-2xl p-6 border border-zinc-700">
-                <div className="flex items-center justify-between mb-4 ">
-                  <h3 className="text-lg font-semibold">Personal information</h3>
-
-                </div>
-                <div className="grid grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label>Full name</Label>
-                    <Input value={profileData.name} readOnly />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Email</Label>
-                    <Input value={profileData.email} readOnly />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Wallets</Label>
-                    <div>
-                      {profileData.wallets.map((wallet) => (
-                        <div key={wallet.id} className="text-sm">
-                          {wallet.currency}: {wallet.balance} {wallet.currency}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Backup Wallets</Label>
-                    <div>
-                      {profileData.backupWallets.map((backupWallet) => (
-                        <div key={backupWallet.id} className="text-sm">
-                          {backupWallet.name}: {backupWallet.balance} {backupWallet.currency}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Transactions</Label>
-                    <div>
-                      {profileData.transactions.map((transaction) => (
-                        <div key={transaction.id} className="text-sm">
-                          {transaction.transactionType}: {transaction.amount} {transaction.currency} on {transaction.transactionDate}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </TabsContent>
-          <TabsContent value="premium">
-            <div className="space-y-8">
-              <div className="flex items-center justify-between rounded-2xl p-6 border border-zinc-700">
-                <div className="flex items-center gap-4">
-                  {/* Optionally, include an icon or image */}
-                  <div
-                    className="flex items-center justify-center bg-yellow-500 text-white font-semibold text-2xl rounded-full"
-                    style={{ width: 80, height: 80 }}
-                  >
-                    <PencilIcon />
-                  </div>
-                  <div>
-                    <h2 className="text-xl font-semibold">Premium Account</h2>
-                    <p className="text-gray-500">Premium accounts are coming soon!</p>
-                  </div>
-                </div>
-              </div>
-              <div className="rounded-2xl p-6 border border-zinc-700">
-                <div className="flex items-center justify-between mb-4 ">
-                  <h3 className="text-lg font-semibold">Coming Soon</h3>
-                </div>
-                <p className="text-gray-500 text-center">Our premium account features are on the way. Stay tuned!</p>
-              </div>
-            </div>
-          </TabsContent>
-
+    <div className="p-8 bg-zinc-900 text-white rounded-2xl space-y-8">
+      {/* Profile Header */}
+      <div className="flex items-center gap-4">
+        {profileData.name ? (
+          <div className="w-20 h-20 relative">
+            <Image
+              src="/assets/3d-2.jpg"
+              alt="Profile Picture"
+              layout="fill"
+              className="rounded-full object-cover"
+            />
+          </div>
+        ) : (
+          <UserIcon className="w-20 h-20 text-gray-400" />
+        )}
+        <div>
+          <h2 className="text-2xl font-bold">{profileData.name}</h2>
+          <p className="text-white">{profileData.email}</p>
         </div>
-      </Tabs>
+      </div>
+
+      {/* Personal Information */}
+      <Card className="p-6 bg-zinc-800">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-white">Personal Information</h3>
+          {/* Removed the Edit button */}
+        </div>
+        <div className="grid grid-cols-2 gap-6">
+          <div>
+            <Label className="text-white">Full Name</Label>
+            <Input value={profileData.name} readOnly className="text-white" />
+          </div>
+          <div>
+            <Label className="text-white">Email</Label>
+            <Input value={profileData.email} readOnly className="text-white" />
+          </div>
+        </div>
+      </Card>
+
+      {/* Wallets */}
+      <Card className="p-6 bg-zinc-800">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-white">Wallets</h3>
+          <WalletIcon className="w-6 h-6 text-green-500" />
+        </div>
+        {profileData.wallets.map((wallet) => (
+          <div
+            key={wallet.id}
+            className="flex justify-between items-center p-4 bg-zinc-700 rounded-lg mb-2"
+          >
+            <div>
+              <p className="text-sm text-white">{wallet.currency}</p>
+              <p className="text-lg font-semibold text-white">{wallet.balance} {wallet.currency}</p>
+            </div>
+            <Button size="sm" variant="outline" className="text-white bg-gray-800">
+              View
+            </Button>
+          </div>
+        ))}
+      </Card>
+
+      {/* Transactions */}
+      <Card className="p-6 bg-zinc-800">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-white">Recent Transactions</h3>
+          <HistoryIcon className="w-6 h-6 text-green-500" />
+        </div>
+
+        {profileData.transactions.length === 0 ? (
+          <div className="flex flex-col items-center justify-center p-8 bg-zinc-700 rounded-lg">
+            <HistoryIcon className="w-12 h-12 text-gray-500 mb-4" />
+            <p className="text-lg text-gray-400">No recent transactions</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {profileData.transactions.map((transaction) => (
+              <div
+                key={transaction.id}
+                className="flex justify-between items-center p-4 bg-zinc-700 rounded-lg"
+              >
+                <div>
+                  <p className="text-sm text-white">{transaction.transactionType}</p>
+                  <p className="text-lg font-semibold text-white">
+                    {transaction.amount} {transaction.currency}
+                  </p>
+                </div>
+                <p className="text-sm text-white">
+                  {new Date(transaction.transactionDate).toLocaleDateString()}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
+      </Card>
+
     </div>
   );
 };
 
-// Fetch user data server-side
 export async function getServerSideProps(context: any) {
   const { email } = context.params;
 
-  const res = await fetch(`${process.env.API_URL}/api/user/${email}`); // Fix: Use backticks for string interpolation
+  const res = await fetch(`${process.env.API_URL}/api/user/${email}`);
   const user = await res.json();
 
   if (!user) {
@@ -222,7 +182,7 @@ export async function getServerSideProps(context: any) {
   }
 
   return {
-    props: { userEmail: email }, // Pass the email to the ProfilePage
+    props: { userEmail: email },
   };
 }
 

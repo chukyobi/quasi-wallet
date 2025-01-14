@@ -1,6 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import prisma from "@/lib/prisma"; // Ensure this import points to the correct prisma client instance
-
+import prisma from "@/lib/prisma"; 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === "POST") {
     const { email } = req.body;
@@ -15,7 +14,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const newEmail = await prisma.emailList.create({
         data: {
           email,
-          status: "pending", // You can change this based on your requirements
+          status: "pending", 
         },
       });
 

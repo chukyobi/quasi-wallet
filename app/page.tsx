@@ -239,9 +239,14 @@ export default function HomePage() {
       const data = await response.json();
 
       if (response.ok) {
-        setMessage(data.message); // Success message
+        setMessage("You have been added to the waitlist successfully!");
+        setEmail(""); 
+        setTimeout(() => {
+          setMessage(""); 
+          
+        }, 2000);
       } else {
-        setMessage(data.message); // Error message
+        setMessage(data.message || "Failed to join the waitlist.");
       }
     } catch (error) {
       setMessage("An unexpected error occurred. Please try again later.");

@@ -1,8 +1,7 @@
-// pages/api/login.ts
 import { NextApiRequest, NextApiResponse } from "next";
 import bcrypt from "bcryptjs";
 import prisma from "@/lib/prisma";
-import { signIn } from "next-auth/react";
+import { signIn } from "next-auth/react";  
 import { generateAndSendOtp } from "@/utils/generateAndSendOtp";
 
 export default async function login(req: NextApiRequest, res: NextApiResponse) {

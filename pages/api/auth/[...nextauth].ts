@@ -4,6 +4,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import prisma from "@/lib/prisma";
 import { createUserWithWallet } from "@/lib/creatUser";
+import { generateAndSendOtp } from "@/utils/generateAndSendOtp";
 
 export default NextAuth({
   providers: [
@@ -11,6 +12,7 @@ export default NextAuth({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
+
     CredentialsProvider({
       name: "Credentials",
       credentials: {
@@ -30,6 +32,12 @@ export default NextAuth({
           throw new Error("No user found with the provided email.");
         }
 
+        // Check if the user is verified
+        if (!user.isVerified) {
+          await generateAndSendOtp(credentials.email); // Trigger OTP resend logic
+          throw new Error("User not verified");
+        }
+
         if (!user.password) {
           throw new Error("Password is missing for this user. Please reset your password.");
         }
@@ -42,7 +50,7 @@ export default NextAuth({
 
         // Return a user object with `id` as a string
         return {
-          id: user.id.toString(), // Convert id to string if it's a number
+          id: user.id.toString(),
           email: user.email,
           name: user.name,
         };
@@ -51,31 +59,27 @@ export default NextAuth({
   ],
 
   session: {
-    strategy: "jwt",
+    strategy: "jwt", // Use JWT for session management
   },
 
   callbacks: {
     async signIn({ user }) {
-      if (!user.email) {
-        throw new Error("Google account email is missing.");
-      }
-
-      if (!user.name) {
-        throw new Error("Google account name is missing.");
+      if (!user.email || !user.name) {
+        throw new Error("User email or name is missing.");
       }
 
       try {
-        // Check if the user already exists in the database
+        // Handle user creation for Google login or non-existent users
         const existingUser = await prisma.user.findUnique({
           where: { email: user.email },
         });
 
         if (!existingUser) {
-          // Create the user with wallet if they don't exist
+          // Create user with wallet if they don't exist (for Google login or first time credentials login)
           await createUserWithWallet({
             email: user.email,
             name: user.name,
-            hashedPassword: "",
+            hashedPassword: "", // No password for Google users, leave it empty
           });
         }
       } catch (error) {
@@ -97,7 +101,7 @@ export default NextAuth({
 
     async jwt({ token, user }) {
       if (user) {
-        // Add user data to token
+        // Add user data to token (id, email, and name)
         token.id = user.id as string;
         token.email = user.email as string;
         token.name = user.name as string;

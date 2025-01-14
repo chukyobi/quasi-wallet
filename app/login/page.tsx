@@ -1,67 +1,60 @@
 "use client";
 import { useState, useEffect } from "react";
-import LoginButtons from "../../components/LoginButtons";
-import { LockClosedIcon, EnvelopeIcon, EyeIcon, EyeSlashIcon } from "@heroicons/react/24/solid";
-import axios from "axios";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
+import { LockClosedIcon, EnvelopeIcon, EyeIcon, EyeSlashIcon } from "@heroicons/react/24/solid";
+import LoginButtons from "@/components/LoginButtons";
 
 const slides = [
-  { src: "/assets/slide4.jpg", text: "Smartest Way to Save Crypto" },
-  { src: "/assets/slide5.jpg", text: "Track Your Finances Effortlessly!" },
-  { src: "/assets/slide6.jpg", text: "Secure Your Investments Today!" },
+    { src: "/assets/slide4.jpg", text: "Smartest Way to Save Crypto" },
+    { src: "/assets/slide5.jpg", text: "Track Your Finances Effortlessly!" },
+    { src: "/assets/slide6.jpg", text: "Secure Your Investments Today!" },
 ];
 
-export default function LoginPage() {
+const LoginPage = () => {
   const router = useRouter();
-  const { data: session, status } = useSession();  // Using useSession hook
+  const { data: session, status } = useSession(); 
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [currentSlide, setCurrentSlide] = useState(0);
+  
 
-  // Redirect if user is already logged in
-  // useEffect(() => {
-  //   if (session) {
-  //     router.push("/dashboard");
-  //   }
-  // }, [session, router]);
+  // Redirect to dashboard if already logged in
+  useEffect(() => {
+    if (status === "authenticated") {
+      router.push("/dashboard");
+    }
+  }, [status, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(""); // Reset error state
-    try {
-      const response = await axios.post("/api/auth/login", {
-        email,
-        password,
-      });
 
-      if (response.data.success) {
-        router.push("/dashboard");
+    const result = await signIn("credentials", {
+      redirect: false,  // Prevent automatic redirection
+      email,
+      password,
+    });
+
+    if (result?.error) {
+      if (result.error === "User not verified") {
+        // Redirect to OTP verification page if user is not verified
+        router.push("/verify-otp");
       } else {
-        setError(response.data.message || "Login failed. Please try again.");
-        if (response.data.actionRequired === "verifyEmail") {
-          router.push("/verify-otp");
-        }
+        // Show any other error message
+        setError(result.error);
       }
-    } catch (err: any) {
-      setError(err?.response?.data?.message || "An unexpected error occurred. Please try again.");
+    } else {
+      // Redirect to dashboard if login is successful
+      router.push("/dashboard");
     }
   };
 
   const togglePasswordVisibility = () => {
     setShowPassword((prev) => !prev);
   };
-
-  const nextSlide = () => {
-    setCurrentSlide((prevSlide) => (prevSlide + 1) % slides.length);
-  };
-
-  useEffect(() => {
-    const interval = setInterval(nextSlide, 3000);
-    return () => clearInterval(interval);
-  }, []);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-black via-gray-900 to-black">
@@ -89,7 +82,15 @@ export default function LoginPage() {
         </div>
 
         <div className="w-full p-4 md:p-8">
-          <h1 className="text-2xl md:text-3xl font-semibold text-gray-50 mb-4">Welcome <span className="text-green-500">Back!</span></h1>
+          {/* Logo linking to Home Page */}
+          <div className="flex justify-center mb-6">
+            <a href="/" className="flex items-center">
+              <img src="/assets/goldman.png" alt="Goldman Private Logo" className="h-20 w-20 mr-2" />
+              {/* <span className="text-2xl font-semibold text-gray-50">Goldman Private</span> */}
+            </a>
+          </div>
+
+          <h1 className="text-2xl md:text-3xl font-semibold text-gray-50 mb-4">Welcome to <span className="text-green-500">Goldman Private!</span></h1>
           <p className="text-gray-500 mb-8 text-sm">Start managing your finances faster and better</p>
 
           <form className="space-y-4" onSubmit={handleSubmit}>
@@ -113,10 +114,10 @@ export default function LoginPage() {
             {error && <p className="text-red-500 text-sm">{error}</p>}
 
             <div className="text-right text-sm">
-              <a href="#" className="text-yellow-600 hover:underline">Forgot password?</a>
+              <a href="#" className="text-green-600 hover:underline">Forgot password?</a>
             </div>
 
-            <button type="submit" className="w-full bg-yellow-500 text-white py-3 rounded-lg font-semibold hover:bg-yellow-600 transition">
+            <button type="submit" className="w-full bg-green-500 text-white py-3 rounded-lg font-semibold hover:bg-yellow-600 transition">
               Login
             </button>
           </form>
@@ -137,4 +138,6 @@ export default function LoginPage() {
       </div>
     </div>
   );
-}
+};
+
+export default LoginPage;
